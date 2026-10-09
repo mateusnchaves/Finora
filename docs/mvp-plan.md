@@ -96,7 +96,7 @@ Cada fase termina com algo funcionando e publicado na Vercel.
 | Fase | Entrega | Estimativa* |
 |---|---|---|
 | 0. Setup | Projeto Next.js, Tailwind, shadcn, Supabase, deploy na Vercel, layout com menu lateral, tema claro/escuro | 1 semana |
-| 1. Autenticação | Cadastro, login (e-mail e Google), conta demo com seed de dados | 1 semana |
+| 1. Autenticação | Cadastro, login por e-mail, conta demo com seed de dados (Google fica para depois) | 1 semana |
 | 2. Lançamentos | Contas, categorias, CRUD de lançamentos, filtros | 1–2 semanas |
 | 3. Dashboard | Cards, gráfico de rosca, barras, top gastos, seletor de mês | 1 semana |
 | 4. Orçamentos + recorrentes | Limites por categoria e geração automática mensal | 1 semana |

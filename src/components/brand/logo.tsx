@@ -28,12 +28,20 @@ export function LogoMark({ size = 40, className }: { size?: number; className?: 
 }
 
 /** Mark + name, for headers and welcome screens. */
-export function Logo({ size = 36, className }: { size?: number; className?: string }) {
+export function Logo({
+  size = 36,
+  className,
+  nameClassName = "text-ink",
+}: {
+  size?: number;
+  className?: string;
+  nameClassName?: string;
+}) {
   return (
     <span className={cn("inline-flex items-center gap-3", className)}>
       <LogoMark size={size} />
       <span
-        className="font-display font-bold leading-none tracking-[-0.01em] text-ink"
+        className={cn("font-display leading-none font-bold tracking-[-0.01em]", nameClassName)}
         style={{ fontSize: Math.round(size * 0.75) }}
         aria-hidden="true"
       >

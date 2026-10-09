@@ -1,8 +1,9 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
-import { BottomNav, SettingsLink, SidebarNav } from "./app-nav";
+import { BottomNav, SettingsLink, SidebarNav, SidebarSettingsLink } from "./app-nav";
 import { ThemeToggle } from "./theme-toggle";
+import { UserMenu, UserMenuSkeleton } from "./user-menu";
 
 /*
  * Sidebar on desktop; top bar + bottom tab bar on mobile.
@@ -19,6 +20,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           <ThemeToggle />
         </div>
         <SidebarNav />
+        <div className="mt-auto flex flex-col gap-1 border-t border-border pt-4">
+          <SidebarSettingsLink />
+          <Suspense fallback={<UserMenuSkeleton />}>
+            <UserMenu />
+          </Suspense>
+        </div>
       </aside>
 
       <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-surface/90 px-4 py-2 backdrop-blur lg:hidden">

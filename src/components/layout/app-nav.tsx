@@ -31,15 +31,17 @@ function SidebarLink({ item, pathname }: { item: NavItem; pathname: string }) {
 export function SidebarNav() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Principal" className="flex flex-1 flex-col gap-1">
+    <nav aria-label="Principal" className="flex flex-col gap-1">
       {NAV_ITEMS.map((item) => (
         <SidebarLink key={item.href} item={item} pathname={pathname} />
       ))}
-      <div className="mt-auto">
-        <SidebarLink item={SETTINGS_ITEM} pathname={pathname} />
-      </div>
     </nav>
   );
+}
+
+export function SidebarSettingsLink() {
+  const pathname = usePathname();
+  return <SidebarLink item={SETTINGS_ITEM} pathname={pathname} />;
 }
 
 /** Mobile tab bar, fixed to the bottom of the screen below the lg breakpoint. */

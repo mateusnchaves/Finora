@@ -35,7 +35,7 @@ export default function DashboardPage() {
     <>
       <PageHeader
         title={`Resumo de ${monthName(month)}`}
-        description="Dados de exemplo enquanto o banco de dados não está conectado."
+        description="Dados de exemplo enquanto esta tela não está ligada ao banco de dados."
         action={
           <Link href="/transactions" className={buttonClasses("primary")}>
             <Icon name="add" size={20} />

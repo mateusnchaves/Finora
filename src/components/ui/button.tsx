@@ -6,17 +6,17 @@ import { cn } from "@/lib/cn";
  * Labels use an infinitive verb: "Adicionar despesa", "Ver extrato".
  */
 const variants = {
-  primary: "bg-brand text-on-brand hover:bg-brand-hover",
-  secondary: "border-border-strong text-ink hover:bg-brand-tint",
-  ghost: "px-3 text-brand hover:bg-brand-tint",
-  danger: "bg-negative-tint text-negative hover:brightness-95",
+  primary: "border-transparent bg-brand px-5 text-on-brand hover:bg-brand-hover",
+  secondary: "border-border-strong px-5 text-ink hover:bg-brand-tint",
+  ghost: "border-transparent px-3 text-brand hover:bg-brand-tint",
+  danger: "border-transparent bg-negative-tint px-5 text-negative hover:brightness-95",
 } as const;
 
 export type ButtonVariant = keyof typeof variants;
 
 export function buttonClasses(variant: ButtonVariant = "primary", className?: string) {
   return cn(
-    "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border-[1.5px] border-transparent px-5",
+    "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border-[1.5px]",
     "text-body font-semibold transition-colors duration-150",
     "disabled:cursor-not-allowed disabled:border-transparent disabled:bg-border disabled:text-ink-muted",
     variants[variant],
