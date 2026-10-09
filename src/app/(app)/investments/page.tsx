@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { FixedIncomeList } from "@/components/investments/fixed-income-list";
 import { AllocationCard, HoldingsByClass, PortfolioSummary, QuotesFootnote } from "@/components/investments/portfolio";
 import { PageHeader } from "@/components/layout/page-header";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
-import { getPortfolio } from "@/lib/data/investments";
+import { getInvestmentsOverview } from "@/lib/data/investments-overview";
+import { formatShortDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Investimentos" };
 
@@ -17,7 +19,7 @@ export default function InvestmentsPage() {
     <>
       <PageHeader
         title="Investimentos"
-        description="Ações, FIIs, ETFs, ativos dos EUA e cripto, com cotação do dia."
+        description="Ações, FIIs, ETFs, exterior, cripto e renda fixa, com valores do dia."
         action={
           <Link href="/investments/new" className={buttonClasses("primary")}>
             <Icon name="add" size={20} />
@@ -25,6 +27,12 @@ export default function InvestmentsPage() {
           </Link>
         }
       />
+      <div className="-mt-4 mb-6 flex flex-wrap gap-2">
+        <Link href="/investments/fixed-income/new" className={buttonClasses("secondary")}>
+          <Icon name="savings" size={20} />
+          Adicionar renda fixa
+        </Link>
+      </div>
       <Suspense fallback={<PortfolioSkeleton />}>
         <PortfolioContent />
       </Suspense>
@@ -34,14 +42,14 @@ export default function InvestmentsPage() {
 
 async function PortfolioContent() {
   await connection();
-  const portfolio = await getPortfolio();
+  const { portfolio, fixedIncome, totals, allocation, isEmpty } = await getInvestmentsOverview();
 
-  if (portfolio.holdings.length === 0) {
+  if (isEmpty) {
     return (
       <EmptyState
         icon="trending_up"
         title="Nenhum investimento ainda"
-        description="Registre a primeira compra, como 100 ações de PETR4 ou 0,01 BTC. O Finora busca a cotação e calcula o preço médio."
+        description="Registre uma compra, como 100 ações de PETR4 ou 0,01 BTC, ou uma aplicação de renda fixa, como um CDB a 110% do CDI."
         action={
           <Link href="/investments/new" className={buttonClasses("primary")}>
             Registrar compra
@@ -53,9 +61,10 @@ async function PortfolioContent() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PortfolioSummary portfolio={portfolio} />
-      <AllocationCard portfolio={portfolio} />
+      <PortfolioSummary totals={totals} />
+      <AllocationCard items={allocation} />
       <HoldingsByClass holdings={portfolio.holdings} />
+      {fixedIncome.items.length > 0 && <FixedIncomeList items={fixedIncome.items} />}
       {portfolio.closed.length > 0 && (
         <p className="px-1 text-body-sm text-ink-muted">
           Posições encerradas:{" "}
@@ -77,6 +86,12 @@ async function PortfolioContent() {
         missing={portfolio.missingQuotes}
         now={portfolio.checkedAt}
       />
+      {fixedIncome.items.length > 0 && fixedIncome.ratesAsOf && (
+        <p className="-mt-4 text-body-sm text-ink-muted">
+          Renda fixa calculada com CDI, Selic e IPCA do Banco Central até {formatShortDate(fixedIncome.ratesAsOf)}, em
+          valores brutos (antes do imposto de renda).
+        </p>
+      )}
     </div>
   );
 }

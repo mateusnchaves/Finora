@@ -174,6 +174,87 @@ export type Database = {
         };
         Relationships: [];
       };
+      fixed_income: {
+        Row: {
+          created_at: string;
+          id: string;
+          index: Database["public"]["Enums"]["fixed_income_index"];
+          kind: Database["public"]["Enums"]["fixed_income_kind"];
+          maturity_date: string | null;
+          name: string;
+          principal: number;
+          rate: number;
+          start_date: string;
+          tax_exempt: boolean;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          index: Database["public"]["Enums"]["fixed_income_index"];
+          kind: Database["public"]["Enums"]["fixed_income_kind"];
+          maturity_date?: string | null;
+          name: string;
+          principal: number;
+          rate: number;
+          start_date: string;
+          tax_exempt?: boolean;
+          user_id?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          index?: Database["public"]["Enums"]["fixed_income_index"];
+          kind?: Database["public"]["Enums"]["fixed_income_kind"];
+          maturity_date?: string | null;
+          name?: string;
+          principal?: number;
+          rate?: number;
+          start_date?: string;
+          tax_exempt?: boolean;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      index_rates: {
+        Row: {
+          date: string;
+          series: string;
+          value: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          date: string;
+          series: string;
+          value: number;
+        };
+        Update: {
+          date?: string;
+          series?: string;
+          value?: number;
+        };
+        Relationships: [];
+      };
+      index_sync: {
+        Row: {
+          series: string;
+          synced_at: string;
+          synced_from: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          series: string;
+          synced_at?: string;
+          synced_from: string;
+        };
+        Update: {
+          series?: string;
+          synced_at?: string;
+          synced_from?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           created_at: string;
@@ -468,6 +549,15 @@ export type Database = {
       account_type: "checking" | "savings" | "wallet" | "credit_card";
       asset_class: "stock_br" | "fii" | "etf" | "stock_us" | "crypto";
       category_kind: "income" | "expense";
+      fixed_income_index: "cdi" | "selic" | "pre" | "ipca";
+      fixed_income_kind:
+        | "cdb"
+        | "lci_lca"
+        | "tesouro_selic"
+        | "tesouro_prefixado"
+        | "tesouro_ipca"
+        | "debenture"
+        | "other";
       trade_type: "buy" | "sell";
       transaction_type: "income" | "expense" | "transfer";
     };
@@ -588,6 +678,16 @@ export const Constants = {
       account_type: ["checking", "savings", "wallet", "credit_card"],
       asset_class: ["stock_br", "fii", "etf", "stock_us", "crypto"],
       category_kind: ["income", "expense"],
+      fixed_income_index: ["cdi", "selic", "pre", "ipca"],
+      fixed_income_kind: [
+        "cdb",
+        "lci_lca",
+        "tesouro_selic",
+        "tesouro_prefixado",
+        "tesouro_ipca",
+        "debenture",
+        "other",
+      ],
       trade_type: ["buy", "sell"],
       transaction_type: ["income", "expense", "transfer"],
     },

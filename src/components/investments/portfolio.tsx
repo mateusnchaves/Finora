@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Card, CardTitle } from "@/components/ui/card";
-import { Icon } from "@/components/ui/icon";
+import { Icon, type IconName } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
-import type { Holding, Portfolio } from "@/lib/data/investments";
+import type { Holding } from "@/lib/data/investments";
 import { ASSET_CLASSES, ASSET_CLASS_INFO } from "@/lib/investments/classes";
 import { formatPercent, formatPrice, formatQuantity } from "@/lib/investments/numbers";
 import type { Quote } from "@/lib/investments/quotes";
@@ -43,8 +43,9 @@ export function Result({
   );
 }
 
-export function PortfolioSummary({ portfolio }: { portfolio: Portfolio }) {
-  const { totals } = portfolio;
+export type PortfolioTotals = { value: number; invested: number; result: number; resultPercent: number; realized: number };
+
+export function PortfolioSummary({ totals }: { totals: PortfolioTotals }) {
   return (
     <Card>
       <p className="text-label text-ink-muted">Patrimônio investido</p>
@@ -71,27 +72,32 @@ export function PortfolioSummary({ portfolio }: { portfolio: Portfolio }) {
   );
 }
 
+export type AllocationItem = { key: string; label: string; icon: IconName; value: number };
+
 /** Allocation by class: single-hue bars on a shared baseline, largest first. */
-export function AllocationCard({ portfolio }: { portfolio: Portfolio }) {
-  const largest = portfolio.allocation[0]?.value ?? 0;
+export function AllocationCard({ items }: { items: AllocationItem[] }) {
+  const sorted = [...items].filter((i) => i.value > 0).sort((a, b) => b.value - a.value);
+  const total = sorted.reduce((sum, i) => sum + i.value, 0);
+  const largest = sorted[0]?.value ?? 0;
   return (
     <Card>
       <CardTitle>Onde está investido</CardTitle>
       <p className="mt-1 mb-5 text-body-sm text-ink-muted">Distribuição do patrimônio por tipo de ativo.</p>
       <ul className="flex flex-col gap-4">
-        {portfolio.allocation.map(({ assetClass, value, share }) => (
-          <li key={assetClass} className="flex items-center gap-3">
+        {sorted.map(({ key, label, icon, value }) => (
+          <li key={key} className="flex items-center gap-3">
             <span
               className="grid size-10 shrink-0 place-items-center rounded-pill bg-brand-tint text-brand"
               aria-hidden="true"
             >
-              <Icon name={ASSET_CLASS_INFO[assetClass].icon} size={20} />
+              <Icon name={icon} size={20} />
             </span>
             <span className="min-w-0 flex-1">
               <span className="mb-1.5 flex items-baseline justify-between gap-3">
-                <span className="text-body text-ink">{ASSET_CLASS_INFO[assetClass].label}</span>
+                <span className="text-body text-ink">{label}</span>
                 <span className="tabular text-body-sm text-ink-muted">
-                  <span className="font-semibold text-ink">{formatMoney(value)}</span> · {Math.round(share * 100)}%
+                  <span className="font-semibold text-ink">{formatMoney(value)}</span> ·{" "}
+                  {total ? Math.round((value / total) * 100) : 0}%
                 </span>
               </span>
               <span className="block h-2 overflow-hidden rounded-sm bg-brand-tint" aria-hidden="true">

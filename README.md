@@ -24,8 +24,8 @@ The interface is in Brazilian Portuguese; code and docs are in English.
 | 4. Budgets + recurring | Category limits, monthly recurring entries | Done |
 | 5. Import | OFX/CSV statement import with auto-categorization | Done |
 | 6. Investments | Stocks, FIIs, ETFs, crypto, US stocks with live quotes | Done |
-| 7. Fixed income | CDB / Tesouro valuation from CDI and IPCA series | Next |
-| 8. Net worth + polish | Net worth over time, empty states, README media | Planned |
+| 7. Fixed income | CDB / Tesouro valuation from CDI and IPCA series | Done |
+| 8. Net worth + polish | Net worth over time, empty states, README media | Next |
 
 The full plan is in [docs/mvp-plan.md](docs/mvp-plan.md) (Portuguese).
 
@@ -85,6 +85,23 @@ Prices come from three providers, called only on the server:
 Quotes are cached for 15 minutes in a shared `quotes` table that signed-in users can read and only
 the server writes (secret key). When a provider fails, the last cached price is shown and the page
 says so.
+
+### Fixed income
+
+CDB, LCI/LCA and Tesouro are valued from Banco Central SGS series (CDI = 12, Selic = 11,
+IPCA = 433), cached in `index_rates` and refreshed every few hours (`src/lib/fixed-income/`):
+
+- **% do CDI / % da Selic**: the principal compounds `1 + daily rate × percentage` on each business
+  day from the start date up to the valuation date (or maturity).
+- **Prefixado**: `(1 + annual rate) ^ (business days / 252)`.
+- **IPCA +**: published monthly IPCA (first month pro rata) × `(1 + spread) ^ (business days / 252)`.
+  Unpublished months are not counted, so it trails reality by about a month of inflation.
+- Business days come from the CDI series itself (one entry per business day).
+- Income tax uses the regressive table (22.5% → 15%) unless the asset is exempt (LCI/LCA).
+
+Values are estimates: banks round differently, IOF applies in the first 30 days, and Tesouro
+titles are marked to market. The UI says so, and flags an index that could not be downloaded
+instead of showing a zero gain.
 
 ### Charts
 

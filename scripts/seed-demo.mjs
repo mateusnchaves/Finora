@@ -56,6 +56,7 @@ await db.connect();
 try {
   await db.query("select private.seed_demo_data($1)", [user.id]);
   await db.query("select private.seed_demo_investments($1)", [user.id]);
+  await db.query("select private.seed_demo_fixed_income($1)", [user.id]);
   const { rows } = await db.query(
     `select type, count(*)::int as count, sum(amount)::numeric(14,2) as total
      from public.transactions where user_id = $1 group by type order by type`,
