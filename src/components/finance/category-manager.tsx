@@ -119,11 +119,12 @@ function CategoryRow({ category, count }: { category: Category; count: number })
           {count === 0 ? "Sem lançamentos" : `${count} ${count === 1 ? "lançamento" : "lançamentos"}`}
         </p>
       </div>
-      <Button variant="ghost" onClick={() => setEditing(true)}>
+      <Button variant="quiet" onClick={() => setEditing(true)}>
         <Icon name="edit" size={20} />
         <span className="sr-only">Renomear {category.name}</span>
       </Button>
       <ConfirmButton
+        subtle
         label="Excluir"
         confirmLabel={count > 0 ? `Excluir (${count} ficam sem categoria)` : "Confirmar exclusão"}
         action={deleteCategory.bind(null, category.id)}

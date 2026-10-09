@@ -21,9 +21,9 @@ The interface is in Brazilian Portuguese; code and docs are in English.
 | 1. Auth | Supabase Auth (email), demo account, core schema with RLS | Done |
 | 2. Transactions | Accounts, categories, CRUD, filters | Done |
 | 3. Dashboard | Monthly summary, charts, top expenses | Done |
-| 4. Budgets + recurring | Category limits, monthly recurring entries | Next |
-| 5. Import | OFX/CSV statement import with auto-categorization | Planned |
-| 6. Investments | Stocks, FIIs, ETFs, crypto, US stocks with live quotes | Planned |
+| 4. Budgets + recurring | Category limits, monthly recurring entries | Done |
+| 5. Import | OFX/CSV statement import with auto-categorization | Done |
+| 6. Investments | Stocks, FIIs, ETFs, crypto, US stocks with live quotes | Next |
 | 7. Fixed income | CDB / Tesouro valuation from CDI and IPCA series | Planned |
 | 8. Net worth + polish | Net worth over time, empty states, README media | Planned |
 
@@ -44,6 +44,28 @@ Headings use **Bodoni Moda** (optical size 14), UI text uses **Instrument Sans**
 **Material Symbols Rounded**. Every token lives in [`src/app/globals.css`](src/app/globals.css) and
 switches between light and dark themes through `data-theme` on `<html>`, set before first paint
 so there is no theme flash.
+
+### Recurring transactions
+
+Rules live in `recurring_rules`. A `pg_cron` job runs `private.generate_recurring()` every day
+at 03:00 (São Paulo) and creates what is due, clamping day 31 to short months. Each rule keeps
+`generated_until`, so generation only moves forward: deleting a generated transaction does not
+bring it back, and a unique index on `(recurring_rule_id, date)` makes reruns idempotent.
+Creating or editing a rule also generates anything already due right away.
+
+### Statement import
+
+`/transactions/import` reads OFX (1.x SGML and 2.x XML, Latin-1 or UTF-8) and bank CSVs
+(Nubank account and card exports, `;` or `,`, debit/credit columns, a title row above the
+header). Nothing is saved until the review step, where each row shows:
+
+- **a suggested category**: first from how you categorized the same merchant before
+  (`category_history()`), then from built-in merchant keywords (iFood, Uber, Drogasil…);
+- **duplicate flags**: the bank's own id (`FITID`) already imported, or a movement with the same
+  day, direction and amount already in the account.
+
+Every import gets an `import_batch_id`, so it can be undone in one click. Sample files at
+`/samples/extrato-exemplo.ofx` and `/samples/fatura-exemplo.csv` are generated with recent dates.
 
 ### Charts
 

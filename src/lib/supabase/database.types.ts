@@ -34,6 +34,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      budgets: {
+        Row: {
+          amount: number;
+          category_id: string;
+          created_at: string;
+          id: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          amount: number;
+          category_id: string;
+          created_at?: string;
+          id?: string;
+          user_id?: string;
+        };
+        Update: {
+          amount?: number;
+          category_id?: string;
+          created_at?: string;
+          id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "budgets_category_id_user_id_fkey";
+            columns: ["category_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id", "user_id"];
+          },
+        ];
+      };
       categories: {
         Row: {
           created_at: string;
@@ -81,6 +114,77 @@ export type Database = {
         };
         Relationships: [];
       };
+      recurring_rules: {
+        Row: {
+          account_id: string;
+          active: boolean;
+          amount: number;
+          category_id: string | null;
+          created_at: string;
+          day_of_month: number;
+          description: string;
+          end_date: string | null;
+          generated_until: string | null;
+          id: string;
+          start_date: string;
+          type: Database["public"]["Enums"]["transaction_type"];
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          account_id: string;
+          active?: boolean;
+          amount: number;
+          category_id?: string | null;
+          created_at?: string;
+          day_of_month: number;
+          description: string;
+          end_date?: string | null;
+          generated_until?: string | null;
+          id?: string;
+          start_date: string;
+          type: Database["public"]["Enums"]["transaction_type"];
+          user_id?: string;
+        };
+        Update: {
+          account_id?: string;
+          active?: boolean;
+          amount?: number;
+          category_id?: string | null;
+          created_at?: string;
+          day_of_month?: number;
+          description?: string;
+          end_date?: string | null;
+          generated_until?: string | null;
+          id?: string;
+          start_date?: string;
+          type?: Database["public"]["Enums"]["transaction_type"];
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "recurring_rules_account_id_user_id_fkey";
+            columns: ["account_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "account_balances";
+            referencedColumns: ["id", "user_id"];
+          },
+          {
+            foreignKeyName: "recurring_rules_account_id_user_id_fkey";
+            columns: ["account_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id", "user_id"];
+          },
+          {
+            foreignKeyName: "recurring_rules_category_id_user_id_fkey";
+            columns: ["category_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id", "user_id"];
+          },
+        ];
+      };
       transactions: {
         Row: {
           account_id: string;
@@ -93,6 +197,7 @@ export type Database = {
           id: string;
           import_batch_id: string | null;
           notes: string | null;
+          recurring_rule_id: string | null;
           transfer_account_id: string | null;
           type: Database["public"]["Enums"]["transaction_type"];
           user_id: string;
@@ -109,6 +214,7 @@ export type Database = {
           id?: string;
           import_batch_id?: string | null;
           notes?: string | null;
+          recurring_rule_id?: string | null;
           transfer_account_id?: string | null;
           type: Database["public"]["Enums"]["transaction_type"];
           user_id?: string;
@@ -124,6 +230,7 @@ export type Database = {
           id?: string;
           import_batch_id?: string | null;
           notes?: string | null;
+          recurring_rule_id?: string | null;
           transfer_account_id?: string | null;
           type?: Database["public"]["Enums"]["transaction_type"];
           user_id?: string;
@@ -148,6 +255,13 @@ export type Database = {
             columns: ["category_id", "user_id"];
             isOneToOne: false;
             referencedRelation: "categories";
+            referencedColumns: ["id", "user_id"];
+          },
+          {
+            foreignKeyName: "transactions_recurring_rule_id_user_id_fkey";
+            columns: ["recurring_rule_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "recurring_rules";
             referencedColumns: ["id", "user_id"];
           },
           {
@@ -193,6 +307,25 @@ export type Database = {
       };
     };
     Functions: {
+      budget_progress: {
+        Args: { p_from: string; p_to: string };
+        Returns: {
+          amount: number;
+          budget_id: string;
+          category_id: string;
+          category_name: string;
+          spent: number;
+        }[];
+      };
+      category_history: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          category_id: string;
+          description: string;
+          kind: Database["public"]["Enums"]["category_kind"];
+          transaction_count: number;
+        }[];
+      };
       expense_category_totals: {
         Args: { p_from: string; p_to: string };
         Returns: {
@@ -202,6 +335,7 @@ export type Database = {
           transaction_count: number;
         }[];
       };
+      generate_my_recurring: { Args: { p_rule_id?: string }; Returns: number };
       monthly_totals: {
         Args: { p_from: string; p_to: string };
         Returns: {

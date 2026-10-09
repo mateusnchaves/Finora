@@ -33,6 +33,7 @@ function initialValues(transaction: TransactionItem | undefined, accounts: Accou
       transferAccountId: transaction.transferAccountId ?? "",
       categoryId: transaction.categoryId ?? "",
       notes: transaction.notes ?? "",
+      repeatMonthly: "",
     };
   }
   return {
@@ -44,6 +45,7 @@ function initialValues(transaction: TransactionItem | undefined, accounts: Accou
     transferAccountId: "",
     categoryId: "",
     notes: "",
+    repeatMonthly: "",
   };
 }
 
@@ -217,6 +219,23 @@ function FormFields({
             </option>
           ))}
         </SelectField>
+      )}
+
+      {!isEdit && !isTransfer && (
+        <label className="flex min-h-11 cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            name="repeatMonthly"
+            defaultChecked={values.repeatMonthly === "on"}
+            className="mt-1 size-5 accent-[var(--brand)]"
+          />
+          <span>
+            <span className="block text-body text-ink">Repetir todo mês</span>
+            <span className="block text-body-sm text-ink-muted">
+              Lança automaticamente no mesmo dia dos próximos meses, como aluguel ou salário.
+            </span>
+          </span>
+        </label>
       )}
 
       <TextareaField

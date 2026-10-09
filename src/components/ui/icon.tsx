@@ -21,8 +21,10 @@ const ICON_NAMES = [
   "delete",
   "directions_car",
   "donut_large",
+  "download",
   "edit",
   "error",
+  "event_repeat",
   "expand_more",
   "filter_alt_off",
   "flight",
@@ -50,6 +52,7 @@ const ICON_NAMES = [
   "swap_horiz",
   "table_view",
   "trending_up",
+  "upload_file",
   "wallet",
   "work",
 ] as const;

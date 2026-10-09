@@ -39,6 +39,7 @@ const transactionSchema = z
     transferAccountId: z.preprocess(emptyToUndefined, z.uuid({ error: "Escolha a conta de destino." }).optional()),
     categoryId: z.preprocess(emptyToUndefined, z.uuid().optional()),
     notes: z.preprocess(emptyToUndefined, z.string().trim().max(500, "Use no máximo 500 caracteres.").optional()),
+    repeatMonthly: z.preprocess((value) => value === "on", z.boolean()),
   })
   .superRefine((data, ctx) => {
     if (data.type !== "transfer") return;
@@ -51,6 +52,7 @@ const transactionSchema = z
 
 function revalidateFinanceViews() {
   revalidatePath("/transactions");
+  revalidatePath("/budgets");
   revalidatePath("/accounts");
   revalidatePath("/dashboard");
 }
@@ -90,11 +92,39 @@ export async function saveTransaction(state: FormState, formData: FormData): Pro
     notes: data.notes ?? null,
   };
 
+  // "Repetir todo mês": the rule starts on this date and this transaction is its first occurrence.
+  let recurringRuleId: string | null = null;
+  if (!data.id && !isTransfer && data.repeatMonthly) {
+    const { data: rule, error: ruleError } = await supabase
+      .from("recurring_rules")
+      .insert({
+        user_id: user.id,
+        type: data.type as "income" | "expense",
+        account_id: data.accountId,
+        category_id: data.categoryId ?? null,
+        amount: data.amount,
+        description: data.description,
+        day_of_month: Number(data.date.slice(8, 10)),
+        start_date: data.date,
+      })
+      .select("id")
+      .single();
+    if (ruleError) return failed(state, values, { error: "Não foi possível criar a recorrência agora." });
+    recurringRuleId = rule.id;
+  }
+
   // RLS hides other users' rows, so updating one of them simply matches nothing.
   const { data: saved, error } = data.id
     ? await supabase.from("transactions").update(row).eq("id", data.id).select("id")
-    : await supabase.from("transactions").insert({ ...row, user_id: user.id }).select("id");
+    : await supabase
+        .from("transactions")
+        .insert({ ...row, user_id: user.id, recurring_rule_id: recurringRuleId })
+        .select("id");
 
+  if (error && recurringRuleId) {
+    // Do not leave a rule behind for a transaction that was never saved.
+    await supabase.from("recurring_rules").delete().eq("id", recurringRuleId);
+  }
   if (!error && saved.length === 0) {
     return failed(state, values, { error: "Este lançamento não existe mais." });
   }
@@ -106,6 +136,9 @@ export async function saveTransaction(state: FormState, formData: FormData): Pro
         : "Não foi possível salvar agora. Tente de novo em instantes.";
     return failed(state, values, { error: message });
   }
+
+  // Fill in any months already due after the first one (a past start date).
+  if (recurringRuleId) await supabase.rpc("generate_my_recurring", { p_rule_id: recurringRuleId });
 
   revalidateFinanceViews();
   redirect(`/transactions?month=${monthOf(data.date)}`);

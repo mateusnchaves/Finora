@@ -12,10 +12,13 @@ export function ConfirmButton({
   label,
   confirmLabel,
   action,
+  subtle = false,
 }: {
   label: string;
   confirmLabel: string;
   action: () => Promise<{ error?: string } | void>;
+  /** Quiet first step for lists (ghost button); the confirmation is still destructive-styled. */
+  subtle?: boolean;
 }) {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string>();
@@ -44,7 +47,7 @@ export function ConfirmButton({
           </Button>
         </div>
       ) : (
-        <Button variant="danger" onClick={() => setConfirming(true)}>
+        <Button variant={subtle ? "quiet" : "danger"} onClick={() => setConfirming(true)}>
           <Icon name="delete" size={20} />
           {label}
         </Button>

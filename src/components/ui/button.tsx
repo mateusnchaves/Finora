@@ -9,6 +9,8 @@ const variants = {
   primary: "border-transparent bg-brand px-5 text-on-brand hover:bg-brand-hover",
   secondary: "border-border-strong px-5 text-ink hover:bg-brand-tint",
   ghost: "border-transparent px-3 text-brand hover:bg-brand-tint",
+  /** Low-emphasis actions repeated on every list row. */
+  quiet: "border-transparent px-3 text-ink-muted hover:bg-brand-tint hover:text-ink",
   danger: "border-transparent bg-negative-tint px-5 text-negative hover:brightness-95",
 } as const;
 

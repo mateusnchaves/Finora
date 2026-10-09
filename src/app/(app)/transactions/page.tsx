@@ -33,6 +33,16 @@ export default function TransactionsPage({ searchParams }: PageProps<"/transacti
           </Link>
         }
       />
+      <div className="-mt-4 mb-6 flex flex-wrap gap-2">
+        <Link href="/transactions/recurring" className={buttonClasses("secondary")}>
+          <Icon name="event_repeat" size={20} />
+          Recorrentes
+        </Link>
+        <Link href="/transactions/import" className={buttonClasses("secondary")}>
+          <Icon name="upload_file" size={20} />
+          Importar extrato
+        </Link>
+      </div>
       <Suspense fallback={<ListSkeleton />}>
         <TransactionsContent searchParams={searchParams} />
       </Suspense>

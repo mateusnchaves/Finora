@@ -3,16 +3,18 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { BalanceCard } from "@/components/finance/balance-card";
+import { BudgetMeter } from "@/components/finance/budget-meter";
 import { MonthSwitcher } from "@/components/finance/month-switcher";
 import { MonthlyChart } from "@/components/finance/monthly-chart";
 import { SpendingBreakdown } from "@/components/finance/spending-breakdown";
 import { TransactionList } from "@/components/finance/transaction-list";
 import { PageHeader } from "@/components/layout/page-header";
 import { buttonClasses } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
 import { getAccounts } from "@/lib/data/accounts";
+import { getBudgetProgress, type BudgetProgress } from "@/lib/data/budgets";
 import { getCategories } from "@/lib/data/categories";
 import { getExpensesBetween, getHighlights, getMonthlyTotals, getSpendingByCategory } from "@/lib/data/dashboard";
 import { monthOf, parseMonthParam, sameDayIn, shiftMonth, todayISO } from "@/lib/dates";
@@ -66,11 +68,12 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<"/da
   const previousName = monthName(Number(previous.slice(5, 7)));
   const todayDay = Number(today.slice(8, 10));
 
-  const [accounts, categories, monthly, spending, previousSamePeriod] = await Promise.all([
+  const [accounts, categories, monthly, spending, budgets, previousSamePeriod] = await Promise.all([
     getAccounts(),
     getCategories(),
     getMonthlyTotals(month, CHART_MONTHS),
     getSpendingByCategory(month),
+    getBudgetProgress(month),
     // A month in progress is compared with the same days of the previous month.
     isCurrentMonth ? getExpensesBetween(`${previous}-01`, sameDayIn(previous, todayDay)) : null,
   ]);
@@ -102,6 +105,8 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<"/da
 
       <SpendingBreakdown month={month} categories={spending} />
 
+      {budgets.length > 0 && <BudgetsSummary budgets={budgets} month={month} isCurrentMonth={isCurrentMonth} />}
+
       <MonthlyChart data={monthly} currentMonth={month} />
 
       <TransactionList
@@ -118,6 +123,38 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<"/da
         moreHref={transactionsHref({ month })}
       />
     </div>
+  );
+}
+
+/** The three budgets closest to (or over) their limit. */
+function BudgetsSummary({
+  budgets,
+  month,
+  isCurrentMonth,
+}: {
+  budgets: BudgetProgress[];
+  month: string;
+  isCurrentMonth: boolean;
+}) {
+  return (
+    <Card>
+      <CardTitle>Orçamentos</CardTitle>
+      <p className="mt-1 mb-4 text-body-sm text-ink-muted">Os mais perto do limite neste mês.</p>
+      <ul className="flex flex-col gap-5">
+        {budgets.slice(0, 3).map((b) => (
+          <li key={b.id}>
+            <BudgetMeter name={b.categoryName} amount={b.amount} spent={b.spent} isCurrentMonth={isCurrentMonth} />
+          </li>
+        ))}
+      </ul>
+      <Link
+        href={isCurrentMonth ? "/budgets" : `/budgets?month=${month}`}
+        className="-mx-2 mt-3 inline-flex min-h-11 items-center gap-1 rounded-md px-2 text-body-sm font-semibold text-brand hover:bg-brand-tint"
+      >
+        Ver todos os orçamentos
+        <Icon name="chevron_right" size={18} />
+      </Link>
+    </Card>
   );
 }
 
