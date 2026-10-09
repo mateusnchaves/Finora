@@ -1,0 +1,185 @@
+@import "tailwindcss";
+
+/*
+ * Finora design tokens ("Alvorada").
+ * Source of truth: the Finora design system (tokens.json). Light and dark
+ * themes share the same token names; the active theme is set on <html> via
+ * data-theme before first paint (see src/app/layout.tsx).
+ */
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --surface: #f6f1e7;
+  --surface-raised: #fffdf8;
+  --brand-tint: #e6ecf5;
+  --deep: #0b1f3a;
+  --ink: #0b1f3a;
+  --ink-muted: #4a5a73;
+  --on-deep: #f6f1e7;
+  --brand: #1d4a87;
+  --brand-hover: #153a6d;
+  --on-brand: #ffffff;
+  --accent: #c9a24b;
+  --on-accent: #0b1f3a;
+  --negative: #8e2430;
+  --negative-tint: #f4dcdd;
+  --border: #ddd5c3;
+  --border-strong: #7a869a;
+  --focus: #1d4a87;
+
+  --shadow-card-value: 0 1px 2px rgba(11, 31, 58, 0.06), 0 12px 32px rgba(11, 31, 58, 0.08);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --surface: #0a1626;
+  --surface-raised: #112239;
+  --brand-tint: #16335e;
+  --deep: #1d4075;
+  --ink: #f1ece0;
+  --ink-muted: #a3b1c7;
+  --on-deep: #f1ece0;
+  --brand: #6fa3e8;
+  --brand-hover: #9bc1f2;
+  --on-brand: #0a1626;
+  --accent: #d9b45e;
+  --on-accent: #0b1f3a;
+  --negative: #f2949b;
+  --negative-tint: #3a1a1f;
+  --border: #1d3555;
+  --border-strong: #6f819c;
+  --focus: #6fa3e8;
+
+  --shadow-card-value: 0 0 0 1px rgba(111, 163, 232, 0.14);
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-brand-tint: var(--brand-tint);
+  --color-deep: var(--deep);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-on-deep: var(--on-deep);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-on-brand: var(--on-brand);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-negative: var(--negative);
+  --color-negative-tint: var(--negative-tint);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-focus: var(--focus);
+
+  --shadow-card: var(--shadow-card-value);
+
+  --font-display: var(--font-bodoni), "Bodoni 72", Didot, Georgia, serif;
+  --font-sans: var(--font-instrument), -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", sans-serif;
+}
+
+/*
+ * Radii and type scale. Spacing uses Tailwind's default 4px scale:
+ * space-1..4 = 1..4, space-5 (24px) = 6, space-6 (32px) = 8,
+ * space-7 (48px) = 12, space-8 (64px) = 16.
+ */
+@theme {
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  --text-display-xl: 56px;
+  --text-display-xl--line-height: 60px;
+  --text-display-xl--font-weight: 700;
+  --text-display-xl--letter-spacing: -0.01em;
+  --text-display-lg: 40px;
+  --text-display-lg--line-height: 46px;
+  --text-display-lg--font-weight: 700;
+  --text-display-lg--letter-spacing: -0.01em;
+  --text-heading-lg: 28px;
+  --text-heading-lg--line-height: 34px;
+  --text-heading-lg--font-weight: 700;
+  --text-heading-md: 20px;
+  --text-heading-md--line-height: 26px;
+  --text-heading-md--font-weight: 700;
+  --text-figure-xl: 44px;
+  --text-figure-xl--line-height: 48px;
+  --text-figure-xl--font-weight: 700;
+  --text-figure-xl--letter-spacing: -0.01em;
+  --text-figure-md: 22px;
+  --text-figure-md--line-height: 28px;
+  --text-figure-md--font-weight: 600;
+  --text-body-lg: 17px;
+  --text-body-lg--line-height: 26px;
+  --text-body: 15px;
+  --text-body--line-height: 22px;
+  --text-body-sm: 13px;
+  --text-body-sm--line-height: 18px;
+  --text-label: 13px;
+  --text-label--line-height: 16px;
+  --text-label--font-weight: 600;
+  --text-label--letter-spacing: 0.02em;
+}
+
+@layer base {
+  body {
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 22px;
+    /* Bodoni Moda at optical size 14 keeps hairlines sturdy; sans ignores it. */
+    font-variation-settings: "opsz" 14;
+    transition:
+      background-color 180ms ease,
+      color 180ms ease;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+}
+
+/* Tabular figures for every amount shown in lists. */
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Material Symbols Rounded, loaded in the root layout. Layered so utilities like `hidden` win. */
+@layer components {
+  .icon {
+    font-family: "Material Symbols Rounded";
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    direction: ltr;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "liga";
+    font-variation-settings:
+      "FILL" 0,
+      "wght" 300,
+      "GRAD" 0,
+      "opsz" 24;
+  }
+
+  .icon[data-filled="true"] {
+    font-variation-settings:
+      "FILL" 1,
+      "wght" 300,
+      "GRAD" 0,
+      "opsz" 24;
+  }
+}
