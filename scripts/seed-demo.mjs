@@ -28,10 +28,17 @@ async function findUser() {
 
 let user = await findUser();
 if (user) {
-  // Keep the password in sync with .env.local.
-  const { error } = await admin.auth.admin.updateUserById(user.id, { password });
-  if (error) throw error;
-  console.log(`Demo user found: ${email}`);
+  // Changing a password signs out every session, so only touch it when .env.local changed it.
+  const probe = createClient(url, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
+  const { error: signInError } = await probe.auth.signInWithPassword({ email, password });
+  if (signInError) {
+    const { error } = await admin.auth.admin.updateUserById(user.id, { password });
+    if (error) throw error;
+    console.log(`Demo user found: ${email} (password updated)`);
+  } else {
+    await probe.auth.signOut({ scope: "local" });
+    console.log(`Demo user found: ${email}`);
+  }
 } else {
   const { data, error } = await admin.auth.admin.createUser({
     email,

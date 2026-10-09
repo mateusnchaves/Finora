@@ -1,0 +1,124 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+import { getCurrentUser } from "@/lib/auth";
+import { isISODate, monthOf } from "@/lib/dates";
+import { parseMoney } from "@/lib/format";
+import { emptyToUndefined, failed, fieldErrorsFrom, formValues, type FormState } from "@/lib/forms";
+import { createClient } from "@/lib/supabase/server";
+
+const MAX_AMOUNT = 999_999_999.99;
+
+const transactionSchema = z
+  .object({
+    id: z.preprocess(emptyToUndefined, z.uuid().optional()),
+    type: z.enum(["expense", "income", "transfer"], { error: "Escolha o tipo do lançamento." }),
+    amount: z
+      .string({ error: "Informe o valor." })
+      .transform((value, ctx) => {
+        const amount = parseMoney(value);
+        if (amount === null || amount <= 0) {
+          ctx.addIssue({ code: "custom", message: "Informe um valor maior que zero, como 49,90." });
+          return z.NEVER;
+        }
+        if (amount > MAX_AMOUNT) {
+          ctx.addIssue({ code: "custom", message: "Valor alto demais." });
+          return z.NEVER;
+        }
+        return amount;
+      }),
+    description: z
+      .string()
+      .trim()
+      .min(1, "Descreva o lançamento, por exemplo “Mercado”.")
+      .max(120, "Use no máximo 120 caracteres."),
+    date: z.string().refine(isISODate, "Escolha uma data válida."),
+    accountId: z.uuid({ error: "Escolha uma conta." }),
+    transferAccountId: z.preprocess(emptyToUndefined, z.uuid({ error: "Escolha a conta de destino." }).optional()),
+    categoryId: z.preprocess(emptyToUndefined, z.uuid().optional()),
+    notes: z.preprocess(emptyToUndefined, z.string().trim().max(500, "Use no máximo 500 caracteres.").optional()),
+  })
+  .superRefine((data, ctx) => {
+    if (data.type !== "transfer") return;
+    if (!data.transferAccountId) {
+      ctx.addIssue({ code: "custom", path: ["transferAccountId"], message: "Escolha a conta de destino." });
+    } else if (data.transferAccountId === data.accountId) {
+      ctx.addIssue({ code: "custom", path: ["transferAccountId"], message: "Escolha uma conta diferente da origem." });
+    }
+  });
+
+function revalidateFinanceViews() {
+  revalidatePath("/transactions");
+  revalidatePath("/accounts");
+  revalidatePath("/dashboard");
+}
+
+export async function saveTransaction(state: FormState, formData: FormData): Promise<FormState> {
+  const values = formValues(formData);
+  const parsed = transactionSchema.safeParse(values);
+  if (!parsed.success) {
+    return failed(state, values, { fieldErrors: fieldErrorsFrom(parsed.error) });
+  }
+
+  const user = await getCurrentUser();
+  const supabase = await createClient();
+  const data = parsed.data;
+  const isTransfer = data.type === "transfer";
+
+  // The category must be of the same kind as the transaction (an expense needs an expense category).
+  if (!isTransfer && data.categoryId) {
+    const { data: category } = await supabase
+      .from("categories")
+      .select("kind")
+      .eq("id", data.categoryId)
+      .maybeSingle();
+    if (!category || category.kind !== data.type) {
+      return failed(state, values, { fieldErrors: { categoryId: "Escolha uma categoria deste tipo." } });
+    }
+  }
+
+  const row = {
+    type: data.type,
+    amount: data.amount,
+    description: data.description,
+    date: data.date,
+    account_id: data.accountId,
+    transfer_account_id: isTransfer ? data.transferAccountId! : null,
+    category_id: isTransfer ? null : (data.categoryId ?? null),
+    notes: data.notes ?? null,
+  };
+
+  // RLS hides other users' rows, so updating one of them simply matches nothing.
+  const { data: saved, error } = data.id
+    ? await supabase.from("transactions").update(row).eq("id", data.id).select("id")
+    : await supabase.from("transactions").insert({ ...row, user_id: user.id }).select("id");
+
+  if (!error && saved.length === 0) {
+    return failed(state, values, { error: "Este lançamento não existe mais." });
+  }
+  if (error) {
+    // 23503: the account or category does not exist for this user.
+    const message =
+      error.code === "23503"
+        ? "A conta ou a categoria escolhida não existe mais. Recarregue a página."
+        : "Não foi possível salvar agora. Tente de novo em instantes.";
+    return failed(state, values, { error: message });
+  }
+
+  revalidateFinanceViews();
+  redirect(`/transactions?month=${monthOf(data.date)}`);
+}
+
+export async function deleteTransaction(id: string, month: string): Promise<{ error?: string }> {
+  if (!z.uuid().safeParse(id).success) return { error: "Lançamento inválido." };
+
+  await getCurrentUser();
+  const supabase = await createClient();
+  const { error } = await supabase.from("transactions").delete().eq("id", id);
+  if (error) return { error: "Não foi possível excluir agora. Tente de novo em instantes." };
+
+  revalidateFinanceViews();
+  redirect(`/transactions?month=${/^\d{4}-\d{2}$/.test(month) ? month : ""}`);
+}

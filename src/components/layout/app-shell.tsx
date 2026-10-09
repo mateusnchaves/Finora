@@ -1,7 +1,16 @@
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
-import { BottomNav, SettingsLink, SidebarNav, SidebarSettingsLink } from "./app-nav";
+import {
+  BottomNav,
+  LiveBottomNav,
+  LiveSettingsLink,
+  LiveSidebarNav,
+  LiveSidebarSettingsLink,
+  SettingsLink,
+  SidebarNav,
+  SidebarSettingsLink,
+} from "./app-nav";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu, UserMenuSkeleton } from "./user-menu";
 
@@ -19,9 +28,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>
           <ThemeToggle />
         </div>
-        <SidebarNav />
+        <Suspense fallback={<SidebarNav pathname="" />}>
+          <LiveSidebarNav />
+        </Suspense>
         <div className="mt-auto flex flex-col gap-1 border-t border-border pt-4">
-          <SidebarSettingsLink />
+          <Suspense fallback={<SidebarSettingsLink pathname="" />}>
+            <LiveSidebarSettingsLink />
+          </Suspense>
           <Suspense fallback={<UserMenuSkeleton />}>
             <UserMenu />
           </Suspense>
@@ -34,13 +47,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         </Link>
         <div className="flex items-center">
           <ThemeToggle />
-          <SettingsLink />
+          <Suspense fallback={<SettingsLink pathname="" />}>
+            <LiveSettingsLink />
+          </Suspense>
         </div>
       </header>
 
       <main className="mx-auto w-full max-w-[720px] px-4 pt-8 pb-28 lg:px-8 lg:pt-16 lg:pb-16">{children}</main>
 
-      <BottomNav />
+      <Suspense fallback={<BottomNav pathname="" />}>
+        <LiveBottomNav />
+      </Suspense>
     </div>
   );
 }

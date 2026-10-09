@@ -2,13 +2,16 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { connection } from "next/server";
+import { cache } from "react";
 import type { Database } from "./database.types";
 
 /**
  * Supabase client for Server Components, Server Actions and Route Handlers.
- * Create one per request; it reads and writes the auth cookies.
+ * One instance per request (React cache), so cookies() is read once: in
+ * `next dev`, a second cookies() call after the client refreshed the session
+ * inside a Server Action trips a Next.js invariant.
  */
-export async function createClient() {
+export const createClient = cache(async () => {
   // Auth reads the clock (token expiry), so opt out of prerendering explicitly.
   await connection();
   const cookieStore = await cookies();
@@ -34,4 +37,4 @@ export async function createClient() {
       },
     },
   );
-}
+});

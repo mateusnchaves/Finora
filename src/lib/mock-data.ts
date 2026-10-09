@@ -1,28 +1,44 @@
-/*
- * Sample data used while the database is not wired up (Phase 0).
- * Replaced by Supabase queries and the demo account seed in later phases.
- */
+import type { TransactionItem } from "@/lib/data/types";
 
-export type Transaction = {
-  id: string;
-  description: string;
-  category: string;
-  date: string; // ISO yyyy-mm-dd
-  amount: number; // always positive
-  type: "income" | "expense";
-};
+/*
+ * Sample data for the dashboard until it reads from Supabase (Phase 3).
+ */
 
 export const SAMPLE_MONTH = { year: 2026, month: 10 };
 
-export const SAMPLE_TRANSACTIONS: Transaction[] = [
-  { id: "1", description: "Mercado Pão Quente", category: "Alimentação", date: "2026-10-06", amount: 184.3, type: "expense" },
-  { id: "2", description: "Salário", category: "Receita", date: "2026-10-05", amount: 4200, type: "income" },
-  { id: "3", description: "Aluguel", category: "Moradia", date: "2026-10-05", amount: 1100, type: "expense" },
-  { id: "4", description: "Recarga bilhete único", category: "Transporte", date: "2026-10-03", amount: 90, type: "expense" },
-  { id: "5", description: "Restaurante Nonna Rosa", category: "Alimentação", date: "2026-10-03", amount: 126.5, type: "expense" },
-  { id: "6", description: "Assinatura de streaming", category: "Lazer", date: "2026-10-02", amount: 39.9, type: "expense" },
-  { id: "7", description: "Farmácia", category: "Saúde", date: "2026-10-01", amount: 95.5, type: "expense" },
-  { id: "8", description: "Freela de design", category: "Receita", date: "2026-10-01", amount: 650, type: "income" },
+function sample(
+  id: string,
+  description: string,
+  categoryName: string,
+  date: string,
+  amount: number,
+  type: "income" | "expense",
+): TransactionItem {
+  return {
+    id,
+    type,
+    amount,
+    date,
+    description,
+    notes: null,
+    accountId: "sample",
+    accountName: "Conta principal",
+    transferAccountId: null,
+    transferAccountName: null,
+    categoryId: null,
+    categoryName,
+  };
+}
+
+export const SAMPLE_TRANSACTIONS: TransactionItem[] = [
+  sample("1", "Mercado Pão Quente", "Alimentação", "2026-10-06", 184.3, "expense"),
+  sample("2", "Salário", "Salário", "2026-10-05", 4200, "income"),
+  sample("3", "Aluguel", "Moradia", "2026-10-05", 1100, "expense"),
+  sample("4", "Recarga bilhete único", "Transporte", "2026-10-03", 90, "expense"),
+  sample("5", "Restaurante Nonna Rosa", "Alimentação", "2026-10-03", 126.5, "expense"),
+  sample("6", "Assinatura de streaming", "Lazer", "2026-10-02", 39.9, "expense"),
+  sample("7", "Farmácia", "Saúde", "2026-10-01", 95.5, "expense"),
+  sample("8", "Freela de design", "Freelance", "2026-10-01", 650, "income"),
 ];
 
 /** Expense total of the previous month, for the "a menos que em setembro" line. */

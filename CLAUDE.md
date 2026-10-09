@@ -21,3 +21,8 @@ Personal finance web app, portfolio project. Plan and phases: `docs/mvp-plan.md`
   composite foreign keys to the parent's `(id, user_id)`.
 - Server code reads the user through `getCurrentUser()` in `src/lib/auth.ts`, inside a
   `<Suspense>` boundary (Cache Components is on).
+- Forms: Server Actions validate with Zod and return `FormState` (`src/lib/forms.ts`); the client
+  form keys itself on `state.attempt` to refill values after an error. Money input goes through
+  `parseMoney`. Run `npm test` after touching `src/lib`.
+- Anything that reads "today" (`todayISO()`) must run after `await connection()` or request data,
+  or Cache Components fails the build.

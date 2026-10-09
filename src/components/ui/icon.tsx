@@ -5,22 +5,37 @@ import { cn } from "@/lib/cn";
  * downloaded, so add a name to ICON_NAMES before using a new icon.
  */
 const ICON_NAMES = [
+  "account_balance",
   "account_balance_wallet",
   "add",
+  "arrow_back",
   "arrow_drop_down",
   "arrow_drop_up",
+  "check",
   "chevron_left",
   "chevron_right",
+  "close",
+  "credit_card",
   "dark_mode",
+  "delete",
   "donut_large",
+  "edit",
   "error",
+  "expand_more",
+  "filter_alt_off",
   "home",
+  "inventory_2",
   "light_mode",
   "logout",
   "mark_email_read",
   "receipt_long",
+  "savings",
+  "search",
+  "sell",
   "settings",
+  "swap_horiz",
   "trending_up",
+  "wallet",
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];

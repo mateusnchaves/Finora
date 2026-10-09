@@ -6,11 +6,20 @@ import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 import { NAV_ITEMS, SETTINGS_ITEM, type NavItem } from "./nav-items";
 
+/*
+ * The navs highlight the active item from the current path. On dynamic routes
+ * the path is only known at request time, so the shell renders the
+ * `Live*` variants (which read usePathname) inside <Suspense>, with the plain
+ * variants and an empty pathname (nothing highlighted) as the fallback.
+ */
+
+type PathProps = { pathname: string };
+
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function SidebarLink({ item, pathname }: { item: NavItem; pathname: string }) {
+function SidebarLink({ item, pathname }: { item: NavItem } & PathProps) {
   const active = isActive(pathname, item.href);
   return (
     <Link
@@ -28,8 +37,7 @@ function SidebarLink({ item, pathname }: { item: NavItem; pathname: string }) {
 }
 
 /** Desktop navigation, shown in the sidebar from the lg breakpoint. */
-export function SidebarNav() {
-  const pathname = usePathname();
+export function SidebarNav({ pathname }: PathProps) {
   return (
     <nav aria-label="Principal" className="flex flex-col gap-1">
       {NAV_ITEMS.map((item) => (
@@ -39,14 +47,12 @@ export function SidebarNav() {
   );
 }
 
-export function SidebarSettingsLink() {
-  const pathname = usePathname();
+export function SidebarSettingsLink({ pathname }: PathProps) {
   return <SidebarLink item={SETTINGS_ITEM} pathname={pathname} />;
 }
 
 /** Mobile tab bar, fixed to the bottom of the screen below the lg breakpoint. */
-export function BottomNav() {
-  const pathname = usePathname();
+export function BottomNav({ pathname }: PathProps) {
   return (
     <nav
       aria-label="Principal"
@@ -77,8 +83,7 @@ export function BottomNav() {
 }
 
 /** Settings shortcut for the mobile top bar. */
-export function SettingsLink() {
-  const pathname = usePathname();
+export function SettingsLink({ pathname }: PathProps) {
   const active = isActive(pathname, SETTINGS_ITEM.href);
   return (
     <Link
@@ -93,4 +98,20 @@ export function SettingsLink() {
       <span className="sr-only">{SETTINGS_ITEM.label}</span>
     </Link>
   );
+}
+
+export function LiveSidebarNav() {
+  return <SidebarNav pathname={usePathname()} />;
+}
+
+export function LiveSidebarSettingsLink() {
+  return <SidebarSettingsLink pathname={usePathname()} />;
+}
+
+export function LiveBottomNav() {
+  return <BottomNav pathname={usePathname()} />;
+}
+
+export function LiveSettingsLink() {
+  return <SettingsLink pathname={usePathname()} />;
 }

@@ -19,8 +19,8 @@ The interface is in Brazilian Portuguese; code and docs are in English.
 | --- | --- | --- |
 | 0. Setup | Next.js, design tokens, app shell, light/dark theme | Done |
 | 1. Auth | Supabase Auth (email), demo account, core schema with RLS | Done |
-| 2. Transactions | Accounts, categories, CRUD, filters | Next |
-| 3. Dashboard | Monthly summary, charts, top expenses | Planned |
+| 2. Transactions | Accounts, categories, CRUD, filters | Done |
+| 3. Dashboard | Monthly summary, charts, top expenses | Next |
 | 4. Budgets + recurring | Category limits, monthly recurring entries | Planned |
 | 5. Import | OFX/CSV statement import with auto-categorization | Planned |
 | 6. Investments | Stocks, FIIs, ETFs, crypto, US stocks with live quotes | Planned |
@@ -62,6 +62,7 @@ Open http://localhost:3000.
 | `npm run dev` | Start the dev server |
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
+| `npm test` | Unit tests (Vitest): money parsing, dates, summaries |
 | `npm run db:push` | Apply pending migrations in `supabase/migrations` |
 | `npm run db:types` | Regenerate `src/lib/supabase/database.types.ts` |
 | `npm run seed:demo` | Create or reset the demo account with six months of data |
@@ -70,6 +71,8 @@ Open http://localhost:3000.
 
 - Every table has **Row Level Security**: a user can only read and write rows whose `user_id`
   is their own (`auth.uid()`).
+- Balances come from the `account_balances` view, declared with `security_invoker` so RLS
+  still applies to the caller.
 - Composite foreign keys (`(account_id, user_id)`) make it impossible to attach a transaction to
   another user's account or category, even with a guessed id.
 - The session is refreshed in `src/proxy.ts`, which also redirects signed-out visitors to
@@ -96,6 +99,7 @@ src/
     layout/           # App shell, navigation, theme toggle
     ui/               # Button, card, icon, empty state
   lib/
+    data/             # Server-only queries (accounts, categories, transactions)
     supabase/         # Server client, proxy session refresh, generated DB types
     auth.ts           # getCurrentUser(): the data access layer entry point
   proxy.ts            # Session refresh + optimistic auth redirects

@@ -133,6 +133,13 @@ export type Database = {
             foreignKeyName: "transactions_account_id_user_id_fkey";
             columns: ["account_id", "user_id"];
             isOneToOne: false;
+            referencedRelation: "account_balances";
+            referencedColumns: ["id", "user_id"];
+          },
+          {
+            foreignKeyName: "transactions_account_id_user_id_fkey";
+            columns: ["account_id", "user_id"];
+            isOneToOne: false;
             referencedRelation: "accounts";
             referencedColumns: ["id", "user_id"];
           },
@@ -147,6 +154,13 @@ export type Database = {
             foreignKeyName: "transactions_transfer_account_id_user_id_fkey";
             columns: ["transfer_account_id", "user_id"];
             isOneToOne: false;
+            referencedRelation: "account_balances";
+            referencedColumns: ["id", "user_id"];
+          },
+          {
+            foreignKeyName: "transactions_transfer_account_id_user_id_fkey";
+            columns: ["transfer_account_id", "user_id"];
+            isOneToOne: false;
             referencedRelation: "accounts";
             referencedColumns: ["id", "user_id"];
           },
@@ -154,7 +168,29 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      account_balances: {
+        Row: {
+          archived: boolean | null;
+          balance: number | null;
+          created_at: string | null;
+          id: string | null;
+          initial_balance: number | null;
+          name: string | null;
+          transaction_count: number | null;
+          type: Database["public"]["Enums"]["account_type"] | null;
+          user_id: string | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
+      category_usage: {
+        Row: {
+          category_id: string | null;
+          transaction_count: number | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
     };
     Functions: {
       [_ in never]: never;
