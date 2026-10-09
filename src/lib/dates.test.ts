@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isISODate, monthRange, parseMonthParam, previousDay, shiftMonth, todayISO } from "./dates";
+import { isISODate, monthRange, parseMonthParam, previousDay, sameDayIn, shiftMonth, todayISO } from "./dates";
 
 describe("shiftMonth", () => {
   it("moves across year boundaries", () => {
@@ -43,5 +43,13 @@ describe("todayISO", () => {
 describe("previousDay", () => {
   it("handles month starts", () => {
     expect(previousDay("2026-03-01")).toBe("2026-02-28");
+  });
+});
+
+describe("sameDayIn", () => {
+  it("caps at the end of shorter months", () => {
+    expect(sameDayIn("2026-09", 31)).toBe("2026-09-30");
+    expect(sameDayIn("2026-02", 30)).toBe("2026-02-28");
+    expect(sameDayIn("2026-09", 8)).toBe("2026-09-08");
   });
 });

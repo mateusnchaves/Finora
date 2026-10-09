@@ -3,7 +3,8 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { TransactionRow } from "@/components/finance/transaction-list";
-import { MonthSwitcher, TransactionFilters } from "@/components/finance/transaction-filters";
+import { MonthSwitcher } from "@/components/finance/month-switcher";
+import { TransactionFilters } from "@/components/finance/transaction-filters";
 import { PageHeader } from "@/components/layout/page-header";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -53,7 +54,7 @@ async function TransactionsContent({ searchParams }: { searchParams: PageProps<"
 
   return (
     <div className="flex flex-col gap-6">
-      <MonthSwitcher filters={filters} />
+      <MonthSwitcher month={filters.month} hrefFor={(month) => transactionsHref(filters, { month })} />
       <TransactionFilters filters={filters} accounts={activeAccounts} categories={categories} />
 
       <dl className="grid grid-cols-3 gap-3 rounded-lg bg-surface-raised p-4 shadow-card">

@@ -193,7 +193,23 @@ export type Database = {
       };
     };
     Functions: {
-      [_ in never]: never;
+      expense_category_totals: {
+        Args: { p_from: string; p_to: string };
+        Returns: {
+          category_id: string;
+          category_name: string;
+          total: number;
+          transaction_count: number;
+        }[];
+      };
+      monthly_totals: {
+        Args: { p_from: string; p_to: string };
+        Returns: {
+          expenses: number;
+          income: number;
+          month: string;
+        }[];
+      };
     };
     Enums: {
       account_type: "checking" | "savings" | "wallet" | "credit_card";

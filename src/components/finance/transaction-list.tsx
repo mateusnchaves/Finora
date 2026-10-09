@@ -4,12 +4,20 @@ import { Icon } from "@/components/ui/icon";
 import type { TransactionItem } from "@/lib/data/types";
 import { formatMoney, formatShortDate, formatSignedMoney } from "@/lib/format";
 import { UNCATEGORIZED } from "@/lib/summary";
+import { categoryIcon, categoryInitials } from "@/lib/category-icons";
 import { cn } from "@/lib/cn";
 
-/** "Alimentação" -> "AL", "Contas da casa" -> "CD" */
-function initials(text: string) {
-  const words = text.trim().split(/\s+/);
-  return (words.length > 1 ? words[0][0] + words[1][0] : words[0].slice(0, 2)).toUpperCase();
+/** Category icon in a tinted circle; transfers get arrows, unknown categories initials. */
+export function CategoryAvatar({ name, transfer = false }: { name: string | null; transfer?: boolean }) {
+  const icon = transfer ? "swap_horiz" : categoryIcon(name);
+  return (
+    <span
+      aria-hidden="true"
+      className="grid size-10 shrink-0 place-items-center rounded-pill bg-brand-tint text-label text-brand"
+    >
+      {icon ? <Icon name={icon} size={20} /> : categoryInitials(name ?? UNCATEGORIZED)}
+    </span>
+  );
 }
 
 function Amount({ transaction }: { transaction: TransactionItem }) {
@@ -46,12 +54,7 @@ export function TransactionRow({
 
   const content = (
     <>
-      <span
-        aria-hidden="true"
-        className="grid size-10 place-items-center rounded-pill bg-brand-tint text-label text-brand"
-      >
-        {isTransfer ? <Icon name="swap_horiz" size={20} /> : initials(transaction.categoryName ?? UNCATEGORIZED)}
-      </span>
+      <CategoryAvatar name={transaction.categoryName} transfer={isTransfer} />
       <span className="min-w-0">
         <span className="block truncate text-body font-medium text-ink">{transaction.description}</span>
         <span className="block truncate text-body-sm text-ink-muted">{meta}</span>
@@ -80,15 +83,39 @@ export function TransactionRow({
   );
 }
 
-export function TransactionList({ title, transactions }: { title: string; transactions: TransactionItem[] }) {
+export function TransactionList({
+  title,
+  transactions,
+  moreHref,
+  emptyText,
+}: {
+  title: string;
+  transactions: TransactionItem[];
+  /** "Ver todos" link under the list. */
+  moreHref?: string;
+  emptyText: string;
+}) {
   return (
     <Card>
       <CardTitle className="mb-2">{title}</CardTitle>
-      <ul>
-        {transactions.map((t) => (
-          <TransactionRow key={t.id} transaction={t} />
-        ))}
-      </ul>
+      {transactions.length === 0 ? (
+        <p className="py-4 text-body text-ink-muted">{emptyText}</p>
+      ) : (
+        <ul>
+          {transactions.map((t) => (
+            <TransactionRow key={t.id} transaction={t} href={`/transactions/${t.id}/edit`} />
+          ))}
+        </ul>
+      )}
+      {moreHref && transactions.length > 0 && (
+        <Link
+          href={moreHref}
+          className="-mx-2 mt-2 inline-flex min-h-11 items-center gap-1 rounded-md px-2 text-body-sm font-semibold text-brand hover:bg-brand-tint"
+        >
+          Ver todos os lançamentos
+          <Icon name="chevron_right" size={18} />
+        </Link>
+      )}
     </Card>
   );
 }

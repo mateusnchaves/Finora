@@ -17,23 +17,7 @@ export function summarize(transactions: TransactionItem[]): PeriodSummary {
   return { income, expenses, net: income - expenses };
 }
 
-export type CategoryTotal = { category: string; total: number; share: number };
-
 export const UNCATEGORIZED = "Sem categoria";
-
-/** Expenses grouped by category, largest first. `share` is 0-1 of all expenses. */
-export function expensesByCategory(transactions: TransactionItem[]): CategoryTotal[] {
-  const totals = new Map<string, number>();
-  for (const t of transactions) {
-    if (t.type !== "expense") continue;
-    const category = t.categoryName ?? UNCATEGORIZED;
-    totals.set(category, (totals.get(category) ?? 0) + t.amount);
-  }
-  const all = [...totals.values()].reduce((sum, v) => sum + v, 0);
-  return [...totals.entries()]
-    .map(([category, total]) => ({ category, total, share: all ? total / all : 0 }))
-    .sort((a, b) => b.total - a.total);
-}
 
 /** Groups an already date-sorted list into consecutive days. */
 export function groupByDate(transactions: TransactionItem[]): { date: string; items: TransactionItem[] }[] {

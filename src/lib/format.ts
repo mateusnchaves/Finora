@@ -90,3 +90,8 @@ export function formatDayHeading(isoDate: string, today: string): string {
   const weekday = WEEKDAYS[new Date(Date.UTC(year, month - 1, day)).getUTCDay()];
   return `${weekday}, ${day} de ${MONTHS_LONG[month - 1]}`;
 }
+
+/** "outubro" -> "Outubro" */
+export function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}

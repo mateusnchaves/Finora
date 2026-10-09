@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { TransactionItem } from "@/lib/data/types";
-import { expensesByCategory, groupByDate, summarize } from "./summary";
+import { groupByDate, summarize } from "./summary";
 
 function tx(partial: Partial<TransactionItem>): TransactionItem {
   return {
@@ -28,23 +28,6 @@ describe("summarize", () => {
       tx({ type: "transfer", amount: 500, transferAccountId: "b" }),
     ]);
     expect(result).toEqual({ income: 1000, expenses: 250, net: 750 });
-  });
-});
-
-describe("expensesByCategory", () => {
-  it("groups, sorts and computes shares", () => {
-    const result = expensesByCategory([
-      tx({ categoryName: "Moradia", amount: 300 }),
-      tx({ categoryName: "Lazer", amount: 50 }),
-      tx({ categoryName: "Moradia", amount: 100 }),
-      tx({ categoryName: null, amount: 50 }),
-      tx({ type: "income", categoryName: "Salário", amount: 5000 }),
-    ]);
-    expect(result).toEqual([
-      { category: "Moradia", total: 400, share: 0.8 },
-      { category: "Lazer", total: 50, share: 0.1 },
-      { category: "Sem categoria", total: 50, share: 0.1 },
-    ]);
   });
 });
 

@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 import type { Account, Category, TransactionType } from "@/lib/data/types";
-import { shiftMonth } from "@/lib/dates";
-import { formatMonth } from "@/lib/format";
 import { hasActiveFilters, transactionsHref, type TransactionFilterValues } from "@/lib/transaction-filters";
 
 const TYPE_CHIPS: { value?: TransactionType; label: string }[] = [
@@ -20,32 +18,6 @@ const selectClasses = cn(
   "min-h-11 w-full cursor-pointer appearance-none rounded-md border-[1.5px] border-border-strong bg-surface-raised",
   "pr-9 pl-3 text-body text-ink",
 );
-
-export function MonthSwitcher({ filters }: { filters: TransactionFilterValues }) {
-  const previous = shiftMonth(filters.month, -1);
-  const next = shiftMonth(filters.month, 1);
-  return (
-    <div className="flex items-center justify-between gap-2">
-      <Link
-        href={transactionsHref(filters, { month: previous })}
-        className="inline-flex size-11 items-center justify-center rounded-md text-ink-muted hover:bg-brand-tint hover:text-ink"
-      >
-        <Icon name="chevron_left" />
-        <span className="sr-only">Mês anterior, {formatMonth(previous)}</span>
-      </Link>
-      <p className="font-display text-heading-md text-ink first-letter:uppercase" aria-live="polite">
-        {formatMonth(filters.month)}
-      </p>
-      <Link
-        href={transactionsHref(filters, { month: next })}
-        className="inline-flex size-11 items-center justify-center rounded-md text-ink-muted hover:bg-brand-tint hover:text-ink"
-      >
-        <Icon name="chevron_right" />
-        <span className="sr-only">Próximo mês, {formatMonth(next)}</span>
-      </Link>
-    </div>
-  );
-}
 
 export function TransactionFilters({
   filters,

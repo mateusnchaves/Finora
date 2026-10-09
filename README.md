@@ -20,8 +20,8 @@ The interface is in Brazilian Portuguese; code and docs are in English.
 | 0. Setup | Next.js, design tokens, app shell, light/dark theme | Done |
 | 1. Auth | Supabase Auth (email), demo account, core schema with RLS | Done |
 | 2. Transactions | Accounts, categories, CRUD, filters | Done |
-| 3. Dashboard | Monthly summary, charts, top expenses | Next |
-| 4. Budgets + recurring | Category limits, monthly recurring entries | Planned |
+| 3. Dashboard | Monthly summary, charts, top expenses | Done |
+| 4. Budgets + recurring | Category limits, monthly recurring entries | Next |
 | 5. Import | OFX/CSV statement import with auto-categorization | Planned |
 | 6. Investments | Stocks, FIIs, ETFs, crypto, US stocks with live quotes | Planned |
 | 7. Fixed income | CDB / Tesouro valuation from CDI and IPCA series | Planned |
@@ -44,6 +44,14 @@ Headings use **Bodoni Moda** (optical size 14), UI text uses **Instrument Sans**
 **Material Symbols Rounded**. Every token lives in [`src/app/globals.css`](src/app/globals.css) and
 switches between light and dark themes through `data-theme` on `<html>`, set before first paint
 so there is no theme flash.
+
+### Charts
+
+The "Receitas x Despesas" chart is hand-built (no chart library): grouped columns with a
+hairline grid, a hover/tap readout, a legend and a table view. Income uses `brand` and
+expenses `ink`, the brand book's money colors; the pair was checked for color-vision
+deficiency separation and 3:1 contrast in both themes. Spending by category uses
+single-hue bars instead of a donut so categories compare on a shared baseline.
 
 ## Getting started
 
@@ -71,6 +79,8 @@ Open http://localhost:3000.
 
 - Every table has **Row Level Security**: a user can only read and write rows whose `user_id`
   is their own (`auth.uid()`).
+- Dashboard totals are computed in Postgres (`monthly_totals`, `expense_category_totals`),
+  `security invoker` functions that respect RLS and avoid the API's 1,000-row page limit.
 - Balances come from the `account_balances` view, declared with `security_invoker` so RLS
   still applies to the caller.
 - Composite foreign keys (`(account_id, user_id)`) make it impossible to attach a transaction to

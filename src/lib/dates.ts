@@ -49,3 +49,13 @@ export function previousDay(isoDate: string): string {
   const date = new Date(Date.UTC(year, month - 1, day - 1));
   return date.toISOString().slice(0, 10);
 }
+
+export function daysInMonth(month: string): number {
+  const [year, m] = month.split("-").map(Number);
+  return new Date(Date.UTC(year, m, 0)).getUTCDate();
+}
+
+/** Same day of the month in another month, capped at its last day (31 Oct -> 30 Sep). */
+export function sameDayIn(month: string, day: number): string {
+  return `${month}-${String(Math.min(day, daysInMonth(month))).padStart(2, "0")}`;
+}
