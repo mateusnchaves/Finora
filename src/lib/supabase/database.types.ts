@@ -34,6 +34,88 @@ export type Database = {
         };
         Relationships: [];
       };
+      asset_trades: {
+        Row: {
+          asset_id: string;
+          created_at: string;
+          date: string;
+          fees: number;
+          id: string;
+          price: number;
+          quantity: number;
+          type: Database["public"]["Enums"]["trade_type"];
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          asset_id: string;
+          created_at?: string;
+          date: string;
+          fees?: number;
+          id?: string;
+          price: number;
+          quantity: number;
+          type: Database["public"]["Enums"]["trade_type"];
+          user_id?: string;
+        };
+        Update: {
+          asset_id?: string;
+          created_at?: string;
+          date?: string;
+          fees?: number;
+          id?: string;
+          price?: number;
+          quantity?: number;
+          type?: Database["public"]["Enums"]["trade_type"];
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "asset_trades_asset_id_user_id_fkey";
+            columns: ["asset_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "assets";
+            referencedColumns: ["id", "user_id"];
+          },
+        ];
+      };
+      assets: {
+        Row: {
+          class: Database["public"]["Enums"]["asset_class"];
+          created_at: string;
+          currency: string;
+          id: string;
+          name: string;
+          quote_id: string;
+          quote_source: string;
+          ticker: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          class: Database["public"]["Enums"]["asset_class"];
+          created_at?: string;
+          currency: string;
+          id?: string;
+          name: string;
+          quote_id: string;
+          quote_source: string;
+          ticker: string;
+          user_id?: string;
+        };
+        Update: {
+          class?: Database["public"]["Enums"]["asset_class"];
+          created_at?: string;
+          currency?: string;
+          id?: string;
+          name?: string;
+          quote_id?: string;
+          quote_source?: string;
+          ticker?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       budgets: {
         Row: {
           amount: number;
@@ -111,6 +193,43 @@ export type Database = {
           id?: string;
           is_demo?: boolean;
           name?: string | null;
+        };
+        Relationships: [];
+      };
+      quotes: {
+        Row: {
+          change_percent: number | null;
+          currency: string;
+          fetched_at: string;
+          logo_url: string | null;
+          market_time: string | null;
+          name: string | null;
+          price: number;
+          quote_id: string;
+          source: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          change_percent?: number | null;
+          currency: string;
+          fetched_at?: string;
+          logo_url?: string | null;
+          market_time?: string | null;
+          name?: string | null;
+          price: number;
+          quote_id: string;
+          source: string;
+        };
+        Update: {
+          change_percent?: number | null;
+          currency?: string;
+          fetched_at?: string;
+          logo_url?: string | null;
+          market_time?: string | null;
+          name?: string | null;
+          price?: number;
+          quote_id?: string;
+          source?: string;
         };
         Relationships: [];
       };
@@ -347,7 +466,9 @@ export type Database = {
     };
     Enums: {
       account_type: "checking" | "savings" | "wallet" | "credit_card";
+      asset_class: "stock_br" | "fii" | "etf" | "stock_us" | "crypto";
       category_kind: "income" | "expense";
+      trade_type: "buy" | "sell";
       transaction_type: "income" | "expense" | "transfer";
     };
     CompositeTypes: {
@@ -465,7 +586,9 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["checking", "savings", "wallet", "credit_card"],
+      asset_class: ["stock_br", "fii", "etf", "stock_us", "crypto"],
       category_kind: ["income", "expense"],
+      trade_type: ["buy", "sell"],
       transaction_type: ["income", "expense", "transfer"],
     },
   },

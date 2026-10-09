@@ -26,3 +26,6 @@ Personal finance web app, portfolio project. Plan and phases: `docs/mvp-plan.md`
   `parseMoney`. Run `npm test` after touching `src/lib`.
 - Anything that reads "today" (`todayISO()`) must run after `await connection()` or request data,
   or Cache Components fails the build.
+- Quotes: never call brapi in parallel (free plan returns 429); go through `getQuotes()` in
+  `src/lib/investments/quotes.ts`, which caches and serializes. The admin client
+  (`src/lib/supabase/admin.ts`) is only for the shared quote cache, never for user rows.

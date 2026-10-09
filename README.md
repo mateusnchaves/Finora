@@ -23,8 +23,8 @@ The interface is in Brazilian Portuguese; code and docs are in English.
 | 3. Dashboard | Monthly summary, charts, top expenses | Done |
 | 4. Budgets + recurring | Category limits, monthly recurring entries | Done |
 | 5. Import | OFX/CSV statement import with auto-categorization | Done |
-| 6. Investments | Stocks, FIIs, ETFs, crypto, US stocks with live quotes | Next |
-| 7. Fixed income | CDB / Tesouro valuation from CDI and IPCA series | Planned |
+| 6. Investments | Stocks, FIIs, ETFs, crypto, US stocks with live quotes | Done |
+| 7. Fixed income | CDB / Tesouro valuation from CDI and IPCA series | Next |
 | 8. Net worth + polish | Net worth over time, empty states, README media | Planned |
 
 The full plan is in [docs/mvp-plan.md](docs/mvp-plan.md) (Portuguese).
@@ -66,6 +66,25 @@ header). Nothing is saved until the review step, where each row shows:
 
 Every import gets an `import_batch_id`, so it can be undone in one click. Sample files at
 `/samples/extrato-exemplo.ofx` and `/samples/fatura-exemplo.csv` are generated with recent dates.
+
+### Investments and quotes
+
+Trades (`asset_trades`) are the source of truth; positions are computed with the average-cost
+method the Receita Federal uses (`src/lib/investments/position.ts`): buys raise the average
+price (fees included), sales keep it and realize the difference. A sale can never exceed what was
+held on its date, including after edits or deletions.
+
+Prices come from three providers, called only on the server:
+
+| Asset | Provider | Notes |
+| --- | --- | --- |
+| B3 stocks, FIIs, ETFs, US stocks | brapi.dev | Free plan: one symbol per request and one request at a time, so symbols are fetched sequentially with a retry on HTTP 429 |
+| Crypto | CoinGecko | Batch request, prices in BRL; tickers resolved via search by market cap |
+| USD/BRL | AwesomeAPI | Converts US positions for portfolio totals |
+
+Quotes are cached for 15 minutes in a shared `quotes` table that signed-in users can read and only
+the server writes (secret key). When a provider fails, the last cached price is shown and the page
+says so.
 
 ### Charts
 
