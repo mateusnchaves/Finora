@@ -4,60 +4,96 @@
 
 <h1 align="center">Finora</h1>
 
-<p align="center">Personal finance, with clarity. A portfolio project.</p>
+<p align="center">Personal finance, with clarity. A full-stack portfolio project.</p>
+
+<p align="center">
+  <img src="docs/screenshots/dashboard.jpg" width="62%" alt="Dashboard: balance, net worth over time and spending by category" />
+  &nbsp;
+  <img src="docs/screenshots/mobile-dark.jpg" width="24%" alt="Dashboard on a phone, dark theme" />
+</p>
 
 ---
 
-Finora is a web app for personal finance management: see where money comes in and,
-above all, where it goes out, plus an investments view with live quotes.
+Finora shows where money comes in and, above all, where it goes out, then follows it into
+investments with live quotes. The interface is in Brazilian Portuguese; code and docs are in
+English. Try it with **"Entrar como demo"**: a sample account with six months of data that resets
+every night.
 
-The interface is in Brazilian Portuguese; code and docs are in English.
+## Features
 
-## Status
+**Money in and out**
+- Accounts (checking, savings, wallet, credit card) with live balances and transfers.
+- Transactions with month navigation, filters by type, account and category, search, and day grouping.
+- Dashboard: balance, month income and expenses compared with the same days of last month,
+  spending by category, six-month income vs. expenses chart, largest expenses, net worth over time.
+- Monthly budgets per category, with near-limit and over-limit alerts.
+- Recurring transactions (salary, rent, subscriptions) created daily by a database job.
+- Bank statement import (OFX and CSV) with category suggestions learned from your own history,
+  duplicate detection and one-click undo.
 
-| Phase | Scope | Status |
-| --- | --- | --- |
-| 0. Setup | Next.js, design tokens, app shell, light/dark theme | Done |
-| 1. Auth | Supabase Auth (email), demo account, core schema with RLS | Done |
-| 2. Transactions | Accounts, categories, CRUD, filters | Done |
-| 3. Dashboard | Monthly summary, charts, top expenses | Done |
-| 4. Budgets + recurring | Category limits, monthly recurring entries | Done |
-| 5. Import | OFX/CSV statement import with auto-categorization | Done |
-| 6. Investments | Stocks, FIIs, ETFs, crypto, US stocks with live quotes | Done |
-| 7. Fixed income | CDB / Tesouro valuation from CDI and IPCA series | Done |
-| 8. Net worth + polish | Net worth over time, empty states, README media | Next |
+**Investments**
+- Stocks, FIIs, ETFs, US stocks and crypto with quotes from brapi.dev, CoinGecko and AwesomeAPI.
+- Average-cost positions (the Receita Federal method), realized profit, allocation by class.
+- Fixed income (CDB, LCI/LCA, Tesouro Selic, Prefixado, IPCA+) valued from Banco Central CDI,
+  Selic and IPCA series, with the regressive income tax estimate.
 
-The full plan is in [docs/mvp-plan.md](docs/mvp-plan.md) (Portuguese).
+**Quality**
+- Row Level Security on every table; privileged code isolated in a private schema.
+- 100+ unit tests on the money, date, import, position and fixed income math.
+- CI on every push: lint, type check, tests and build.
+- Light and dark themes with no flash, accessible charts (legend, readout, table view), phone layout.
+
+<p align="center">
+  <img src="docs/screenshots/transactions.jpg" width="45%" alt="Transactions with filters and day grouping" />
+  &nbsp;
+  <img src="docs/screenshots/investments.jpg" width="45%" alt="Investments: allocation and positions with live quotes" />
+</p>
 
 ## Tech stack
 
-- **Next.js 16** (App Router, Cache Components) + **TypeScript**
-- **Tailwind CSS 4** with design tokens from the Finora design system
-- **Supabase** (Postgres, Auth, Row Level Security)
-- **Vercel** for hosting
-- Quotes: [brapi.dev](https://brapi.dev), CoinGecko, Banco Central (SGS), Tesouro Transparente
+- **Next.js 16** (App Router, Server Actions, Cache Components, Proxy) + **TypeScript**
+- **Tailwind CSS 4** with tokens from the Finora design system
+- **Supabase**: Postgres, Auth, Row Level Security, `pg_cron`
+- **Zod** for form validation, **Vitest** for unit tests, **GitHub Actions** for CI
+- Market data: [brapi.dev](https://brapi.dev), [CoinGecko](https://www.coingecko.com/),
+  [AwesomeAPI](https://docs.awesomeapi.com.br/), [Banco Central SGS](https://dadosabertos.bcb.gov.br/)
+- Hosting: **Vercel**
 
-## Design
+## Architecture
 
-The visual identity ("Alvorada") pairs blu notte and ivory with a single touch of antique gold.
-Headings use **Bodoni Moda** (optical size 14), UI text uses **Instrument Sans**, and icons are
-**Material Symbols Rounded**. Every token lives in [`src/app/globals.css`](src/app/globals.css) and
-switches between light and dark themes through `data-theme` on `<html>`, set before first paint
-so there is no theme flash.
+```mermaid
+flowchart LR
+  Browser -->|Server Actions / RSC| Next["Next.js on Vercel"]
+  Next -->|user session, RLS| Supabase[(Supabase Postgres)]
+  Next -->|server only, cached| Quotes["brapi · CoinGecko · AwesomeAPI · BCB"]
+  Next -->|secret key, shared caches only| Supabase
+  Cron["pg_cron"] -->|daily| Supabase
+```
+
+- **Reads** go through a small data access layer (`src/lib/data/*`) that verifies the session with
+  `getCurrentUser()` and queries with the user's own Supabase client, so RLS always applies.
+- **Writes** are Server Actions that validate with Zod and return field-level messages.
+- **Aggregates** (monthly totals, spending by category, budgets, balances, month-end net worth)
+  run in Postgres as `security invoker` functions and views.
+- **Market data** is fetched only on the server and cached in shared tables (`quotes`,
+  `index_rates`) that users can read and only the server writes.
+- **Jobs** run inside the database with `pg_cron`: recurring transactions at 03:00 and the demo
+  reset at 04:00 (São Paulo).
+
+## How the numbers work
 
 ### Recurring transactions
 
-Rules live in `recurring_rules`. A `pg_cron` job runs `private.generate_recurring()` every day
-at 03:00 (São Paulo) and creates what is due, clamping day 31 to short months. Each rule keeps
-`generated_until`, so generation only moves forward: deleting a generated transaction does not
-bring it back, and a unique index on `(recurring_rule_id, date)` makes reruns idempotent.
-Creating or editing a rule also generates anything already due right away.
+Rules live in `recurring_rules`. `private.generate_recurring()` creates what is due, clamping
+day 31 to short months. Each rule keeps `generated_until`, so generation only moves forward:
+deleting a generated transaction does not bring it back, and a unique index on
+`(recurring_rule_id, date)` makes reruns idempotent.
 
 ### Statement import
 
-`/transactions/import` reads OFX (1.x SGML and 2.x XML, Latin-1 or UTF-8) and bank CSVs
-(Nubank account and card exports, `;` or `,`, debit/credit columns, a title row above the
-header). Nothing is saved until the review step, where each row shows:
+`/transactions/import` reads OFX (1.x SGML and 2.x XML, Latin-1 or UTF-8) and bank CSVs (Nubank
+account and card exports, `;` or `,`, debit/credit columns, a title row above the header).
+Nothing is saved until the review step, where each row shows:
 
 - **a suggested category**: first from how you categorized the same merchant before
   (`category_history()`), then from built-in merchant keywords (iFood, Uber, Drogasil…);
@@ -69,12 +105,10 @@ Every import gets an `import_batch_id`, so it can be undone in one click. Sample
 
 ### Investments and quotes
 
-Trades (`asset_trades`) are the source of truth; positions are computed with the average-cost
-method the Receita Federal uses (`src/lib/investments/position.ts`): buys raise the average
-price (fees included), sales keep it and realize the difference. A sale can never exceed what was
-held on its date, including after edits or deletions.
-
-Prices come from three providers, called only on the server:
+Trades (`asset_trades`) are the source of truth; positions use the average-cost method
+(`src/lib/investments/position.ts`): buys raise the average price (fees included), sales keep it
+and realize the difference. A sale can never exceed what was held on its date, including after
+edits or deletions.
 
 | Asset | Provider | Notes |
 | --- | --- | --- |
@@ -82,17 +116,16 @@ Prices come from three providers, called only on the server:
 | Crypto | CoinGecko | Batch request, prices in BRL; tickers resolved via search by market cap |
 | USD/BRL | AwesomeAPI | Converts US positions for portfolio totals |
 
-Quotes are cached for 15 minutes in a shared `quotes` table that signed-in users can read and only
-the server writes (secret key). When a provider fails, the last cached price is shown and the page
-says so.
+Quotes are cached for 15 minutes. When a provider fails, the last cached price is shown and the
+page says so.
 
 ### Fixed income
 
-CDB, LCI/LCA and Tesouro are valued from Banco Central SGS series (CDI = 12, Selic = 11,
-IPCA = 433), cached in `index_rates` and refreshed every few hours (`src/lib/fixed-income/`):
+Valued from Banco Central SGS series (CDI = 12, Selic = 11, IPCA = 433), cached in `index_rates`
+(`src/lib/fixed-income/`):
 
-- **% do CDI / % da Selic**: the principal compounds `1 + daily rate × percentage` on each business
-  day from the start date up to the valuation date (or maturity).
+- **% do CDI / % da Selic**: the principal compounds `1 + daily rate × percentage` on each
+  business day from the start date up to the valuation date (or maturity).
 - **Prefixado**: `(1 + annual rate) ^ (business days / 252)`.
 - **IPCA +**: published monthly IPCA (first month pro rata) × `(1 + spread) ^ (business days / 252)`.
   Unpublished months are not counted, so it trails reality by about a month of inflation.
@@ -100,24 +133,49 @@ IPCA = 433), cached in `index_rates` and refreshed every few hours (`src/lib/fix
 - Income tax uses the regressive table (22.5% → 15%) unless the asset is exempt (LCI/LCA).
 
 Values are estimates: banks round differently, IOF applies in the first 30 days, and Tesouro
-titles are marked to market. The UI says so, and flags an index that could not be downloaded
-instead of showing a zero gain.
+titles are marked to market. The UI says so.
 
-### Charts
+### Net worth
 
-The "Receitas x Despesas" chart is hand-built (no chart library): grouped columns with a
-hairline grid, a hover/tap readout, a legend and a table view. Income uses `brand` and
-expenses `ink`, the brand book's money colors; the pair was checked for color-vision
-deficiency separation and 3:1 contrast in both themes. Spending by category uses
-single-hue bars instead of a donut so categories compare on a shared baseline.
+Today's net worth is account balances plus investments at market value. Past months add the
+month-end account balances (`balance_history()`) to what was invested at that date, at cost,
+because historical market prices are not stored. The chart's footnote says so.
+
+## Design
+
+The visual identity ("Alvorada") pairs blu notte and ivory with a single touch of antique gold.
+Headings use **Bodoni Moda** (optical size 14), UI text uses **Instrument Sans**, and icons are
+**Material Symbols Rounded**. Tokens live in [`src/app/globals.css`](src/app/globals.css) and switch
+themes through `data-theme` on `<html>`, set before first paint.
+
+Brand rules carried into the UI: income in blue with "+", expenses in ink with "−", never red for
+an ordinary expense or an investment loss; red only for real alerts (over budget, negative
+balance). Charts are hand-built; the two-series palette (blue/ink) was checked for color-vision
+deficiency separation and contrast in both themes, and every chart has a table view.
+
+## Security model
+
+- Every table has **Row Level Security**: a user can only read and write rows whose `user_id` is
+  their own. Views and aggregate functions run as the caller (`security invoker`).
+- Composite foreign keys (`(account_id, user_id)`) make it impossible to attach a row to another
+  user's account, category, asset or rule, even with a guessed id.
+- The session is refreshed in `src/proxy.ts`; that redirect is only a convenience, and
+  authorization lives in RLS and `getCurrentUser()`.
+- Privileged code (seeds, new-user trigger, recurring generator, demo reset) lives in a `private`
+  schema the public API cannot reach. Users cannot change their own `is_demo` flag or a rule's
+  `generated_until`.
+- API tokens and the Supabase secret key stay on the server; the secret key is used only for the
+  shared quote and index caches.
 
 ## Getting started
 
-Requirements: Node.js 20+.
+Requirements: Node.js 20+ and a Supabase project.
 
 ```bash
 npm install
-cp .env.example .env.local   # then fill in the values
+cp .env.example .env.local   # fill in Supabase, brapi and demo values
+npm run db:push              # create the schema
+npm run seed:demo            # create the demo account
 npm run dev
 ```
 
@@ -128,49 +186,43 @@ Open http://localhost:3000.
 | `npm run dev` | Start the dev server |
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
-| `npm test` | Unit tests (Vitest): money parsing, dates, summaries |
+| `npm test` | Unit tests (Vitest) |
 | `npm run db:push` | Apply pending migrations in `supabase/migrations` |
 | `npm run db:types` | Regenerate `src/lib/supabase/database.types.ts` |
-| `npm run seed:demo` | Create or reset the demo account with six months of data |
+| `npm run seed:demo` | Create or reset the demo account |
 
-## Security model
+### Deploying to Vercel
 
-- Every table has **Row Level Security**: a user can only read and write rows whose `user_id`
-  is their own (`auth.uid()`).
-- Dashboard totals are computed in Postgres (`monthly_totals`, `expense_category_totals`),
-  `security invoker` functions that respect RLS and avoid the API's 1,000-row page limit.
-- Balances come from the `account_balances` view, declared with `security_invoker` so RLS
-  still applies to the caller.
-- Composite foreign keys (`(account_id, user_id)`) make it impossible to attach a transaction to
-  another user's account or category, even with a guessed id.
-- The session is refreshed in `src/proxy.ts`, which also redirects signed-out visitors to
-  `/login`. That redirect is only a convenience; authorization lives in RLS and in
-  `getCurrentUser()` (`src/lib/auth.ts`).
-- Privileged code (demo seed, new-user trigger) lives in a `private` Postgres schema that the
-  public API cannot reach. Users cannot change their own `is_demo` flag.
-- The demo account is a regular user created by `npm run seed:demo`; its credentials stay on the
-  server and the "Entrar como demo" button signs in through a Server Action.
+1. Import the GitHub repository in Vercel.
+2. Add the environment variables from `.env.example` (all except `SUPABASE_DB_URL`, which is only
+   for local scripts).
+3. In Supabase → Authentication → URL Configuration, set the Site URL to the Vercel domain and
+   add `https://<domain>/auth/callback` to the redirect URLs.
 
 ## Project structure
 
 ```
 src/
   app/
-    (app)/            # Authenticated area: dashboard, transactions, accounts, ...
-    (auth)/           # Login, sign-up and their Server Actions
-    auth/callback/    # Email confirmation link handler
-    layout.tsx        # Fonts, theme script, metadata
-    globals.css       # Design tokens (colors, type scale, radii, shadows)
-  components/
-    brand/            # Logo
-    finance/          # Balance card, transaction list, spending breakdown
-    layout/           # App shell, navigation, theme toggle
-    ui/               # Button, card, icon, empty state
+    (app)/              # Signed-in area: dashboard, transactions, accounts, budgets, investments, settings
+    (auth)/             # Login, sign-up and their Server Actions
+    auth/callback/      # Email confirmation link handler
+    samples/            # Generated sample OFX/CSV files
+  components/           # brand, finance, investments, layout, ui
   lib/
-    data/             # Server-only queries (accounts, categories, transactions)
-    supabase/         # Server client, proxy session refresh, generated DB types
-    auth.ts           # getCurrentUser(): the data access layer entry point
-  proxy.ts            # Session refresh + optimistic auth redirects
-supabase/migrations/  # SQL schema, RLS policies, demo seed function
-scripts/              # db:push, db:types, seed:demo
+    data/               # Server-only data access layer
+    fixed-income/       # SGS series cache and valuation
+    import/             # OFX/CSV parsers, categorization, duplicate detection
+    investments/        # Positions, quotes, providers, number formatting
+    supabase/           # Server, proxy and admin clients, generated types
+  proxy.ts              # Session refresh + optimistic auth redirects
+supabase/migrations/    # Schema, RLS, functions, cron jobs, demo seeds
+scripts/                # db:push, db:types, seed:demo
+docs/                   # MVP plan (Portuguese) and screenshots
 ```
+
+## Roadmap
+
+All eight MVP phases are done (plan in [docs/mvp-plan.md](docs/mvp-plan.md)). Ideas for later:
+Open Finance via Pluggy or Belvo, savings goals, card bills with installments, Google sign-in,
+AI insights on spending, and Tesouro Direto prices from Tesouro Transparente.

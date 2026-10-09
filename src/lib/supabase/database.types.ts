@@ -507,6 +507,13 @@ export type Database = {
       };
     };
     Functions: {
+      balance_history: {
+        Args: { p_months: number };
+        Returns: {
+          balance: number;
+          month: string;
+        }[];
+      };
       budget_progress: {
         Args: { p_from: string; p_to: string };
         Returns: {

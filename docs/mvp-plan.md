@@ -1,5 +1,7 @@
 # Finora — Planejamento do MVP
 
+> Status: as oito fases foram concluídas. Detalhes técnicos no README.
+
 > Aplicativo web de gestão financeira pessoal. Projeto de portfólio.
 
 ## 1. Decisões

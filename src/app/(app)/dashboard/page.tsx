@@ -6,6 +6,7 @@ import { BalanceCard } from "@/components/finance/balance-card";
 import { BudgetMeter } from "@/components/finance/budget-meter";
 import { MonthSwitcher } from "@/components/finance/month-switcher";
 import { MonthlyChart } from "@/components/finance/monthly-chart";
+import { NetWorthCard } from "@/components/finance/net-worth-card";
 import { SpendingBreakdown } from "@/components/finance/spending-breakdown";
 import { TransactionList } from "@/components/finance/transaction-list";
 import { PageHeader } from "@/components/layout/page-header";
@@ -14,6 +15,7 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
 import { getAccounts } from "@/lib/data/accounts";
+import { getNetWorth } from "@/lib/data/net-worth";
 import { getBudgetProgress, type BudgetProgress } from "@/lib/data/budgets";
 import { getCategories } from "@/lib/data/categories";
 import { getExpensesBetween, getHighlights, getMonthlyTotals, getSpendingByCategory } from "@/lib/data/dashboard";
@@ -103,6 +105,11 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<"/da
         comparison={comparison}
       />
 
+      {/* Net worth needs market quotes; it streams in on its own so the month summary is not held back. */}
+      <Suspense fallback={<Card className="h-80" aria-hidden="true" />}>
+        <NetWorthSection />
+      </Suspense>
+
       <SpendingBreakdown month={month} categories={spending} />
 
       {budgets.length > 0 && <BudgetsSummary budgets={budgets} month={month} isCurrentMonth={isCurrentMonth} />}
@@ -124,6 +131,11 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<"/da
       />
     </div>
   );
+}
+
+async function NetWorthSection() {
+  const netWorth = await getNetWorth();
+  return <NetWorthCard netWorth={netWorth} />;
 }
 
 /** The three budgets closest to (or over) their limit. */
