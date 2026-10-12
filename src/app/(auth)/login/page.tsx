@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
+import { ConfirmedNotice } from "../confirmed-notice";
 import { DemoButton, LoginForm } from "../auth-forms";
 
 export const metadata: Metadata = { title: "Entrar" };
@@ -9,6 +11,11 @@ export default function LoginPage() {
     <>
       <h1 className="font-display text-heading-lg text-ink">Entrar</h1>
       <p className="mt-1 mb-8 text-body text-ink-muted">Acompanhe para onde vai o seu dinheiro.</p>
+
+      {/* Reads the URL, so it sits in its own boundary and the rest of the page stays static. */}
+      <Suspense fallback={null}>
+        <ConfirmedNotice />
+      </Suspense>
 
       <LoginForm />
 
