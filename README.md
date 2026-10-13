@@ -197,7 +197,7 @@ Open http://localhost:3000.
 2. Add the environment variables from `.env.example` (all except `SUPABASE_DB_URL`, which is only
    for local scripts).
 3. In Supabase → Authentication → URL Configuration, set the Site URL to the Vercel domain and
-   add `https://<domain>/auth/callback` to the redirect URLs.
+   add `https://<domain>/**` to the redirect URLs.
 
 ## Project structure
 
@@ -223,6 +223,7 @@ docs/                   # MVP plan (Portuguese) and screenshots
 
 ## Roadmap
 
-All eight MVP phases are done (plan in [docs/mvp-plan.md](docs/mvp-plan.md)). Ideas for later:
-Open Finance via Pluggy or Belvo, savings goals, card bills with installments, Google sign-in,
-AI insights on spending, and Tesouro Direto prices from Tesouro Transparente.
+All eight MVP phases are done (plan in [docs/mvp-plan.md](docs/mvp-plan.md)). Next, in order
+([docs/roadmap.md](docs/roadmap.md)): production hardening (custom email, Google sign-in,
+end-to-end tests), credit card bills with installments, savings goals, AI insights on spending,
+and finally an installable mobile app (PWA) with offline mode and notifications.
