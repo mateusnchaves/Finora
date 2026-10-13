@@ -29,7 +29,7 @@ notificações de fatura, orçamento e metas.
 - [x] Apagar `.env.vercel`
 - [x] Apagar o projeto duplicado `finora` na Vercel
 - [x] README: redirect do Supabase passa a ser `https://<domínio>/**`
-- [ ] Login com Google: código pronto; falta criar o OAuth client no Google Cloud e ativar no Supabase
+- [x] Login com Google (Google Cloud: projeto `finora-511523`, app publicado; página `/privacy`)
 - [x] Testes de ponta a ponta com Playwright: cadastro/login, demo, criar lançamento, dashboard
 - [ ] Playwright no CI do GitHub Actions (job pronto; falta cadastrar os secrets no GitHub)
 - [ ] Monitoramento de erros (Sentry ou Vercel)
