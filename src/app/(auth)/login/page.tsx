@@ -32,6 +32,11 @@ export default function LoginPage() {
           Criar conta
         </Link>
       </p>
+      <p className="mt-4 text-center text-body-sm text-ink-muted">
+        <Link href="/privacy" className="underline-offset-4 hover:underline">
+          Política de privacidade
+        </Link>
+      </p>
     </>
   );
 }
