@@ -10,7 +10,8 @@
     "db:push": "node --env-file=.env.local scripts/db-push.mjs",
     "seed:demo": "node --env-file=.env.local scripts/seed-demo.mjs",
     "db:types": "node --env-file=.env.local scripts/db-types.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -22,6 +23,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^24.19.1",
     "@types/pg": "^8.23.1",

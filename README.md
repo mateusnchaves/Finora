@@ -40,7 +40,9 @@ every night.
 **Quality**
 - Row Level Security on every table; privileged code isolated in a private schema.
 - 100+ unit tests on the money, date, import, position and fixed income math.
-- CI on every push: lint, type check, tests and build.
+- End-to-end tests (Playwright) for sign-in, the demo account and the transaction flow, run
+  against a throwaway user that is created and deleted on every run.
+- CI on every push: lint, type check, unit tests, build and end-to-end tests.
 - Light and dark themes with no flash, accessible charts (legend, readout, table view), phone layout.
 
 <p align="center">
@@ -54,7 +56,7 @@ every night.
 - **Next.js 16** (App Router, Server Actions, Cache Components, Proxy) + **TypeScript**
 - **Tailwind CSS 4** with tokens from the Finora design system
 - **Supabase**: Postgres, Auth, Row Level Security, `pg_cron`
-- **Zod** for form validation, **Vitest** for unit tests, **GitHub Actions** for CI
+- **Zod** for form validation, **Vitest** and **Playwright** for tests, **GitHub Actions** for CI
 - Market data: [brapi.dev](https://brapi.dev), [CoinGecko](https://www.coingecko.com/),
   [AwesomeAPI](https://docs.awesomeapi.com.br/), [Banco Central SGS](https://dadosabertos.bcb.gov.br/)
 - Hosting: **Vercel**
@@ -187,6 +189,7 @@ Open http://localhost:3000.
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
 | `npm test` | Unit tests (Vitest) |
+| `npm run test:e2e` | End-to-end tests (Playwright; needs `SUPABASE_SECRET_KEY` to create the test user) |
 | `npm run db:push` | Apply pending migrations in `supabase/migrations` |
 | `npm run db:types` | Regenerate `src/lib/supabase/database.types.ts` |
 | `npm run seed:demo` | Create or reset the demo account |
@@ -216,6 +219,7 @@ src/
     investments/        # Positions, quotes, providers, number formatting
     supabase/           # Server, proxy and admin clients, generated types
   proxy.ts              # Session refresh + optimistic auth redirects
+e2e/                    # Playwright tests
 supabase/migrations/    # Schema, RLS, functions, cron jobs, demo seeds
 scripts/                # db:push, db:types, seed:demo
 docs/                   # MVP plan (Portuguese) and screenshots

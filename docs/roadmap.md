@@ -26,14 +26,14 @@ notificações de fatura, orçamento e metas.
 ## 2. Fases
 
 ### Fase 9 — Base de produção
-- [ ] Apagar `.env.vercel`
+- [x] Apagar `.env.vercel`
 - [x] Apagar o projeto duplicado `finora` na Vercel
 - [x] README: redirect do Supabase passa a ser `https://<domínio>/**`
 - [ ] E-mail próprio com Resend (SMTP no Supabase): tira o limite de poucos e-mails por hora
 - [ ] Modelo de e-mail de confirmação com o link `/auth/confirm` (funciona em qualquer aparelho)
 - [ ] Login com Google (Supabase Auth + Google Cloud)
-- [ ] Testes de ponta a ponta com Playwright: cadastro/login, demo, criar lançamento, dashboard
-- [ ] Playwright no CI do GitHub Actions
+- [x] Testes de ponta a ponta com Playwright: cadastro/login, demo, criar lançamento, dashboard
+- [ ] Playwright no CI do GitHub Actions (job pronto; falta cadastrar os secrets no GitHub)
 - [ ] Monitoramento de erros (Sentry ou Vercel)
 
 ### Fase 10 — Cartão de crédito de verdade

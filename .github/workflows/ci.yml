@@ -33,3 +33,48 @@ jobs:
           # Placeholders: the build only prerenders static shells and never calls these services.
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_placeholder
+
+  e2e:
+    # Runs against the real Supabase project with a throwaway user created and deleted per run.
+    needs: check
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      BRAPI_TOKEN: ${{ secrets.BRAPI_TOKEN }}
+      DEMO_EMAIL: ${{ secrets.DEMO_EMAIL }}
+      DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
+    steps:
+      - name: Skip without secrets
+        id: secrets
+        run: echo "ready=${{ env.SUPABASE_SECRET_KEY != '' }}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        if: steps.secrets.outputs.ready == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          node-version: 24
+          cache: npm
+
+      - if: steps.secrets.outputs.ready == 'true'
+        run: npm ci
+
+      - if: steps.secrets.outputs.ready == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - if: steps.secrets.outputs.ready == 'true'
+        run: npm run build
+
+      - name: End-to-end tests
+        if: steps.secrets.outputs.ready == 'true'
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
