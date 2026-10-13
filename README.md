@@ -21,6 +21,9 @@ every night.
 
 ## Features
 
+**Sign-in**
+- Email and password, Google, or a one-click demo account.
+
 **Money in and out**
 - Accounts (checking, savings, wallet, credit card) with live balances and transfers.
 - Transactions with month navigation, filters by type, account and category, search, and day grouping.
@@ -201,6 +204,9 @@ Open http://localhost:3000.
    for local scripts).
 3. In Supabase → Authentication → URL Configuration, set the Site URL to the Vercel domain and
    add `https://<domain>/**` to the redirect URLs.
+4. For Google sign-in, create an OAuth client (Web application) in Google Cloud with the
+   redirect URI `https://<project-ref>.supabase.co/auth/v1/callback`, then paste its client ID
+   and secret in Supabase → Authentication → Sign In / Providers → Google.
 
 ## Project structure
 
@@ -209,7 +215,7 @@ src/
   app/
     (app)/              # Signed-in area: dashboard, transactions, accounts, budgets, investments, settings
     (auth)/             # Login, sign-up and their Server Actions
-    auth/callback/      # Email confirmation link handler
+    auth/callback/      # Google sign-in and email confirmation handler
     samples/            # Generated sample OFX/CSV files
   components/           # brand, finance, investments, layout, ui
   lib/

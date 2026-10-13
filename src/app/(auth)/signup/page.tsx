@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SignupForm } from "../auth-forms";
+import { GoogleButton, OrDivider, SignupForm } from "../auth-forms";
 
 export const metadata: Metadata = { title: "Criar conta" };
 
@@ -9,6 +9,10 @@ export default function SignupPage() {
     <>
       <h1 className="font-display text-heading-lg text-ink">Criar conta</h1>
       <p className="mt-1 mb-8 text-body text-ink-muted">Leva menos de um minuto.</p>
+
+      <GoogleButton />
+
+      <OrDivider />
 
       <SignupForm />
 

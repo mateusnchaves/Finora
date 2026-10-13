@@ -1,10 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
+import { GoogleMark } from "@/components/brand/google-mark";
 import { Button } from "@/components/ui/button";
 import { Field, FormError } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
-import { signIn, signInAsDemo, signUp, type AuthFormState } from "./actions";
+import { signIn, signInAsDemo, signInWithGoogle, signUp, type AuthFormState } from "./actions";
 
 const initialState: AuthFormState = {};
 
@@ -19,6 +20,29 @@ export function LoginForm() {
         {pending ? "Entrando…" : "Entrar"}
       </Button>
     </form>
+  );
+}
+
+export function GoogleButton() {
+  const [state, action, pending] = useActionState(signInWithGoogle, initialState);
+  return (
+    <form action={action} className="flex flex-col gap-3">
+      <FormError message={state.error} />
+      <Button type="submit" variant="secondary" disabled={pending}>
+        <GoogleMark />
+        {pending ? "Abrindo o Google…" : "Continuar com Google"}
+      </Button>
+    </form>
+  );
+}
+
+export function OrDivider() {
+  return (
+    <div className="my-6 flex items-center gap-3 text-body-sm text-ink-muted" aria-hidden="true">
+      <span className="h-px flex-1 bg-border" />
+      ou
+      <span className="h-px flex-1 bg-border" />
+    </div>
   );
 }
 

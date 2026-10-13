@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ConfirmedNotice } from "../confirmed-notice";
-import { DemoButton, LoginForm } from "../auth-forms";
+import { LoginNotice } from "../login-notice";
+import { DemoButton, GoogleButton, LoginForm, OrDivider } from "../auth-forms";
 
 export const metadata: Metadata = { title: "Entrar" };
 
@@ -14,18 +14,17 @@ export default function LoginPage() {
 
       {/* Reads the URL, so it sits in its own boundary and the rest of the page stays static. */}
       <Suspense fallback={null}>
-        <ConfirmedNotice />
+        <LoginNotice />
       </Suspense>
 
       <LoginForm />
 
-      <div className="my-6 flex items-center gap-3 text-body-sm text-ink-muted" aria-hidden="true">
-        <span className="h-px flex-1 bg-border" />
-        ou
-        <span className="h-px flex-1 bg-border" />
-      </div>
+      <OrDivider />
 
-      <DemoButton />
+      <div className="flex flex-col gap-3">
+        <GoogleButton />
+        <DemoButton />
+      </div>
 
       <p className="mt-10 text-center text-body text-ink-muted">
         Ainda não tem conta?{" "}

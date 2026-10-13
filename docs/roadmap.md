@@ -7,7 +7,7 @@
 
 | Fase | Entrega | Estimativa* |
 |---|---|---|
-| 9. Base de produção | E-mail próprio, login com Google, testes de ponta a ponta, monitoramento de erros | 1 semana |
+| 9. Base de produção | Login com Google, testes de ponta a ponta, monitoramento de erros | 1 semana |
 | 10. Cartão de crédito | Faturas com fechamento e vencimento, compras parceladas, pagamento da fatura | 1–2 semanas |
 | 11. Metas | "Caixinhas" com valor-alvo, prazo e progresso | 1 semana |
 | 12. Insights com IA | Resumo do mês e perguntas em português sobre os próprios gastos | 1–2 semanas |
@@ -29,9 +29,7 @@ notificações de fatura, orçamento e metas.
 - [x] Apagar `.env.vercel`
 - [x] Apagar o projeto duplicado `finora` na Vercel
 - [x] README: redirect do Supabase passa a ser `https://<domínio>/**`
-- [ ] E-mail próprio com Resend (SMTP no Supabase): tira o limite de poucos e-mails por hora
-- [ ] Modelo de e-mail de confirmação com o link `/auth/confirm` (funciona em qualquer aparelho)
-- [ ] Login com Google (Supabase Auth + Google Cloud)
+- [ ] Login com Google: código pronto; falta criar o OAuth client no Google Cloud e ativar no Supabase
 - [x] Testes de ponta a ponta com Playwright: cadastro/login, demo, criar lançamento, dashboard
 - [ ] Playwright no CI do GitHub Actions (job pronto; falta cadastrar os secrets no GitHub)
 - [ ] Monitoramento de erros (Sentry ou Vercel)
@@ -68,6 +66,8 @@ notificações de fatura, orçamento e metas.
 ### Fase 13 — App no celular (PWA) — objetivo final
 - [ ] Antes de começar: trocar a secret key e a senha do banco do Supabase (e o token da brapi),
       atualizar `.env.local` e a Vercel, fazer redeploy e apagar as chaves antigas
+- [ ] Antes de começar: desligar "Confirm email" no Supabase (o e-mail grátis tem limite de poucos
+      envios por hora; Resend só envia para qualquer pessoa com domínio próprio)
 - [ ] Manifest com nome, ícones e cores do Alvorada; instalável no Android e no iPhone
 - [ ] Service worker: telas abrem sem internet com os últimos dados vistos
 - [ ] Lançamento rápido offline, enviado quando a conexão voltar

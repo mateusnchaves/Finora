@@ -31,6 +31,26 @@ test.describe("signed out", () => {
     await expect(page.getByText("Use uma senha com pelo menos 8 caracteres.")).toBeVisible();
   });
 
+  test("Google sign-in goes to Supabase with the callback address", async ({ page }) => {
+    // Stop at Supabase's authorize endpoint: the Google consent screen is out of scope.
+    let authorizeUrl: URL | undefined;
+    await page.route("**/auth/v1/authorize?**", (route) => {
+      authorizeUrl = new URL(route.request().url());
+      return route.fulfill({ status: 200, body: "ok" });
+    });
+
+    await page.goto("/login");
+    await page.getByRole("button", { name: "Continuar com Google" }).click();
+    await expect.poll(() => authorizeUrl?.searchParams.get("provider")).toBe("google");
+    expect(authorizeUrl?.searchParams.get("redirect_to")).toMatch(/\/auth\/callback\?flow=oauth$/);
+  });
+
+  test("a cancelled Google sign-in returns to login with a message", async ({ page }) => {
+    await page.goto("/auth/callback?flow=oauth&error=access_denied");
+    await expect(page).toHaveURL(/\/login\?error=google/);
+    await expect(page.getByText("Não foi possível entrar com o Google.")).toBeVisible();
+  });
+
   test("the demo account opens with sample data", async ({ page }) => {
     await page.goto("/login");
     await page.getByRole("button", { name: "Entrar como demo" }).click();

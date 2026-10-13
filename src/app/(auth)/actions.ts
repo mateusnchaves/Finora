@@ -81,6 +81,19 @@ export async function signUp(_state: AuthFormState, formData: FormData): Promise
   return { confirmEmailSentTo: email };
 }
 
+/** Sends the browser to Google; /auth/callback finishes the sign-in (and creates the account on first use). */
+export async function signInWithGoogle(): Promise<AuthFormState> {
+  const origin = (await headers()).get("origin") ?? "http://localhost:3000";
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: `${origin}/auth/callback?flow=oauth` },
+  });
+  if (error || !data.url) return { error: "Não foi possível abrir o login do Google agora." };
+
+  redirect(data.url);
+}
+
 export async function signInAsDemo(): Promise<AuthFormState> {
   const email = process.env.DEMO_EMAIL;
   const password = process.env.DEMO_PASSWORD;
