@@ -55,13 +55,14 @@ notificações de fatura, orçamento e metas.
 - [x] Testes: valor mensal necessário, metas vencidas, meta sem prazo
 
 ### Fase 12 — Insights com IA
-- [ ] Resumo do mês escrito pela IA ("Delivery subiu 18%, puxado pelo iFood de sexta à noite")
-- [ ] Perguntas em português ("quanto gastei com Uber em agosto?")
-- [ ] A IA só chama funções de leitura já existentes, com o cliente do próprio usuário (RLS
+- [x] Resumo do mês escrito pela IA ("Delivery subiu 18%, puxado pelo iFood de sexta à noite")
+- [x] Perguntas em português ("quanto gastei com Uber em agosto?")
+- [x] A IA só chama funções de leitura já existentes, com o cliente do próprio usuário (RLS
       continua valendo); nunca escreve no banco
-- [ ] Cada resposta mostra de onde veio o número (link para os lançamentos filtrados)
-- [ ] API do Claude só no servidor; limite de uso por usuário e cache do resumo mensal
-- [ ] Conta demo com respostas prontas (sem custo de API)
+- [x] Cada resposta mostra de onde veio o número (link para os lançamentos filtrados)
+- [x] API do Claude só no servidor; limite de uso por usuário e cache do resumo mensal
+- [x] Conta demo só com perguntas prontas, guardadas por dia (custo limitado)
+- [ ] Criar a chave da API da Anthropic e colocar no `.env.local` e na Vercel
 
 ### Fase 13 — App no celular (PWA) — objetivo final
 - [ ] Antes de começar: trocar a secret key e a senha do banco do Supabase (e o token da brapi),

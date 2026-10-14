@@ -38,6 +38,11 @@ every night.
 - Bank statement import (OFX and CSV) with category suggestions learned from your own history,
   duplicate detection and one-click undo.
 
+**Assistente (AI)**
+- Monthly summary written from the month's numbers, with links to the transactions behind each point.
+- Questions in Portuguese ("quanto gastei com Uber em agosto?") answered by Claude through read-only
+  tools, each answer listing where its numbers came from.
+
 **Investments**
 - Stocks, FIIs, ETFs, US stocks and crypto with quotes from brapi.dev, CoinGecko and AwesomeAPI.
 - Average-cost positions (the Receita Federal method), realized profit, allocation by class.
@@ -65,6 +70,7 @@ every night.
 - **Next.js 16** (App Router, Server Actions, Cache Components, Proxy) + **TypeScript**
 - **Tailwind CSS 4** with tokens from the Finora design system
 - **Supabase**: Postgres, Auth, Row Level Security, `pg_cron`
+- **Anthropic SDK** (Claude) for the Assistente
 - **Zod** for form validation, **Vitest** and **Playwright** for tests, **GitHub Actions** for CI
 - Market data: [brapi.dev](https://brapi.dev), [CoinGecko](https://www.coingecko.com/),
   [AwesomeAPI](https://docs.awesomeapi.com.br/), [Banco Central SGS](https://dadosabertos.bcb.gov.br/)
@@ -169,6 +175,22 @@ The pace is linear (`src/lib/goals.ts`): halfway to the deadline, half the targe
 saved. More than 10% under that line is "atrasada"; the monthly amount spreads what is left over
 the calendar months until the deadline, counting the current one.
 
+### Assistente (AI)
+
+The assistant runs on the server with the Anthropic SDK (`claude-opus-5-5`, low effort, server-side
+refusal fallback). Two read-only tools (`src/lib/ai/tools.ts`) are all it can use:
+`find_transactions` (sum, group and list transactions in a period, with type, category, account and
+text filters) and `get_context` (accounts, categories, budgets, goals, card bills). They query with
+the signed-in user's own Supabase client, so Row Level Security applies to the model exactly as to
+the user, and nothing can be written. Every lookup also records a link to the same filters on the
+transactions page, shown under the answer as "De onde veio". The monthly summary uses structured
+output; its links are built by the app from the category name, never taken from the model.
+
+Limits: 20 questions and 5 summaries per user per day (`ai_requests`). Suggested questions and
+summaries are cached per day (`ai_results`), and the shared demo account can only use those, so its
+cost is bounded. Without `ANTHROPIC_API_KEY` the page says the assistant is unavailable and the rest
+of the app is unaffected.
+
 ### Error monitoring
 
 `src/instrumentation.ts` catches every server error (rendering, Server Actions, Route Handlers,
@@ -248,6 +270,7 @@ Open http://localhost:3000.
 4. For Google sign-in, create an OAuth client (Web application) in Google Cloud with the
    redirect URI `https://<project-ref>.supabase.co/auth/v1/callback`, then paste its client ID
    and secret in Supabase → Authentication → Sign In / Providers → Google.
+5. For the Assistente, add `ANTHROPIC_API_KEY` (from console.anthropic.com).
 
 ## Project structure
 

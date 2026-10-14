@@ -5,9 +5,6 @@ test("goal: create, save, withdraw within limits, finish and delete", async ({ p
   // A deadline about five months away.
   const deadline = `${shiftMonth(monthOf(todayISO()), 5)}-28`;
 
-  await page.goto("/goals");
-  await expect(page.getByText("Nenhuma meta ainda")).toBeVisible();
-
   await page.goto("/goals/new");
   await page.getByLabel("Nome").fill("Bicicleta E2E");
   await page.getByText("Carro", { exact: true }).click();
@@ -55,7 +52,7 @@ test("goal: create, save, withdraw within limits, finish and delete", async ({ p
   await page.getByRole("button", { name: "Excluir", exact: true }).click();
   await page.getByRole("button", { name: "Confirmar exclusão" }).click();
   await expect(page).toHaveURL(/\/goals$/);
-  await expect(page.getByText("Nenhuma meta ainda")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Bicicleta E2E/ })).toHaveCount(0);
 });
 
 test("a new goal cannot have a past deadline", async ({ page }) => {

@@ -41,6 +41,11 @@ export default function PrivacyPage() {
             hospedado na Vercel.
           </li>
           <li>
+            Quando você usa o Assistente, os números e as descrições dos seus lançamentos necessários para a resposta
+            são enviados à Anthropic, que fornece a IA (Claude). Eles servem só para gerar a resposta. Nada é enviado
+            se você não usar o Assistente.
+          </li>
+          <li>
             Para buscar cotações, o app envia aos provedores (brapi, CoinGecko, AwesomeAPI e Banco Central) apenas o
             código do ativo, como PETR4. Nenhum dado pessoal vai junto.
           </li>

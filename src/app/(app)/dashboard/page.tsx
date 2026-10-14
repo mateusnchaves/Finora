@@ -16,6 +16,7 @@ import { buttonClasses } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
+import { aiConfigured } from "@/lib/ai/client";
 import { getAccounts } from "@/lib/data/accounts";
 import { getCardSummaries } from "@/lib/data/cards";
 import { getGoals } from "@/lib/data/goals";
@@ -110,6 +111,19 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<"/da
         monthLabel={isCurrentMonth ? "Neste mês" : `Em ${formatMonth(month)}`}
         comparison={comparison}
       />
+
+      {isCurrentMonth && aiConfigured() && (
+        <Link
+          href="/insights"
+          className="flex min-h-11 items-center gap-3 rounded-lg bg-brand-tint px-5 py-4 text-body text-ink hover:bg-brand-tint/70"
+        >
+          <Icon name="auto_awesome" size={22} className="shrink-0 text-brand" />
+          <span className="flex-1">
+            <span className="font-semibold">Assistente:</span> resumo do mês e respostas sobre seus gastos.
+          </span>
+          <Icon name="chevron_right" size={20} className="text-brand" />
+        </Link>
+      )}
 
       {isCurrentMonth && (
         <Suspense fallback={null}>

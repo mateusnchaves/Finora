@@ -43,6 +43,59 @@ export type Database = {
         };
         Relationships: [];
       };
+      ai_requests: {
+        Row: {
+          created_at: string;
+          id: number;
+          input_tokens: number;
+          kind: string;
+          output_tokens: number;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: never;
+          input_tokens?: number;
+          kind: string;
+          output_tokens?: number;
+          user_id?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: never;
+          input_tokens?: number;
+          kind?: string;
+          output_tokens?: number;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      ai_results: {
+        Row: {
+          content: NonNullable<Json>;
+          created_at: string;
+          day: string;
+          key: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          content: NonNullable<Json>;
+          created_at?: string;
+          day: string;
+          key: string;
+          user_id?: string;
+        };
+        Update: {
+          content?: NonNullable<Json>;
+          created_at?: string;
+          day?: string;
+          key?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       asset_trades: {
         Row: {
           asset_id: string;
