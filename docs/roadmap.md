@@ -32,7 +32,7 @@ notificações de fatura, orçamento e metas.
 - [x] Login com Google (Google Cloud: projeto `finora-511523`, app publicado; página `/privacy`)
 - [x] Testes de ponta a ponta com Playwright: cadastro/login, demo, criar lançamento, dashboard
 - [ ] Playwright no CI do GitHub Actions (job pronto; falta cadastrar os secrets no GitHub)
-- [ ] Monitoramento de erros (Sentry ou Vercel)
+- [x] Monitoramento de erros: tabela própria no Supabase (`npm run errors`), sem serviço externo
 
 ### Fase 10 — Cartão de crédito de verdade
 - [ ] Cartão ganha dia de fechamento, dia de vencimento e limite

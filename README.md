@@ -46,6 +46,8 @@ every night.
 - End-to-end tests (Playwright) for sign-in, the demo account and the transaction flow, run
   against a throwaway user that is created and deleted on every run.
 - CI on every push: lint, type check, unit tests, build and end-to-end tests.
+- Error monitoring without a third-party service: server errors (`onRequestError`) and browser
+  errors are stored in a private table for 30 days; `npm run errors` lists them.
 - Light and dark themes with no flash, accessible charts (legend, readout, table view), phone layout.
 
 <p align="center">
@@ -140,6 +142,17 @@ Valued from Banco Central SGS series (CDI = 12, Selic = 11, IPCA = 433), cached 
 Values are estimates: banks round differently, IOF applies in the first 30 days, and Tesouro
 titles are marked to market. The UI says so.
 
+### Error monitoring
+
+`src/instrumentation.ts` catches every server error (rendering, Server Actions, Route Handlers,
+proxy), writes one JSON line to the Vercel logs and calls `public.report_error()`. Browser errors
+(error boundaries, uncaught errors and rejected promises) go through a Server Action, capped at
+five per page load. Errors with a digest came from the server and are not reported twice. The
+function trims every field, keeps only the pathname (query strings can hold search terms), caps
+the table at 60 events per minute and stores them in `private.error_events`, which the public API
+cannot read; a nightly job keeps 30 days. Reporting runs only in production
+(`VERCEL_ENV=production`) or with `REPORT_ERRORS=1`.
+
 ### Net worth
 
 Today's net worth is account balances plus investments at market value. Past months add the
@@ -196,6 +209,7 @@ Open http://localhost:3000.
 | `npm run db:push` | Apply pending migrations in `supabase/migrations` |
 | `npm run db:types` | Regenerate `src/lib/supabase/database.types.ts` |
 | `npm run seed:demo` | Create or reset the demo account |
+| `npm run errors` | Latest error events reported by production |
 
 ### Deploying to Vercel
 

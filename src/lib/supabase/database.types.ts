@@ -551,6 +551,18 @@ export type Database = {
           month: string;
         }[];
       };
+      report_error: {
+        Args: {
+          p_context?: string;
+          p_digest?: string;
+          p_message: string;
+          p_path?: string;
+          p_route?: string;
+          p_source: string;
+          p_user_agent?: string;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       account_type: "checking" | "savings" | "wallet" | "credit_card";

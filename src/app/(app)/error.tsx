@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
+import { reportBrowserError } from "@/components/error-reporter";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 
 /** Error boundary for the signed-in area: explains, offers a retry, keeps the navigation. */
 export default function AppError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+  useEffect(() => reportBrowserError(error, "app error boundary"), [error]);
+
   return (
     <Card className="flex flex-col items-start gap-3">
       <span className="grid size-12 place-items-center rounded-pill bg-negative-tint text-negative" aria-hidden="true">

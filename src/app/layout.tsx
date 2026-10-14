@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Bodoni_Moda, Instrument_Sans } from "next/font/google";
+import { ErrorReporter } from "@/components/error-reporter";
 import { ICON_FONT_URL } from "@/components/ui/icon";
 import "./globals.css";
 
@@ -44,7 +45,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <link rel="stylesheet" href={ICON_FONT_URL} />
       </head>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {children}
+        <ErrorReporter />
+      </body>
     </html>
   );
 }
