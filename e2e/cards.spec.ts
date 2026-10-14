@@ -40,6 +40,8 @@ test("credit card: installments, bill and payment", async ({ page }) => {
   await page.goto(`${cardUrl}?month=${thisMonth}`);
   await expect(page.getByText(/Fechada|Vencida/)).toBeVisible();
   await expect(page.getByRole("link", { name: /Fone E2E/ })).toContainText("Parcela 1/3");
+  // Rows render their own <li>; nesting them breaks hydration.
+  await expect(page.locator("li li")).toHaveCount(0);
   await page.getByRole("link", { name: "Pagar R$ 100,00" }).click();
 
   // The payment form arrives filled in: a transfer from the bank account to the card.

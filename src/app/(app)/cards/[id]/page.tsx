@@ -141,9 +141,7 @@ async function CardBillContent({
           ) : (
             <ul>
               {items.map((t) => (
-                <li key={t.id} className="border-b border-border last:border-b-0">
-                  <TransactionRow transaction={t} href={`/transactions/${t.id}/edit`} />
-                </li>
+                <TransactionRow key={t.id} transaction={t} href={`/transactions/${t.id}/edit`} />
               ))}
             </ul>
           )}
@@ -154,9 +152,7 @@ async function CardBillContent({
             <CardTitle className="mb-2">Pagamentos</CardTitle>
             <ul>
               {payments.map((t) => (
-                <li key={t.id} className="border-b border-border last:border-b-0">
-                  <TransactionRow transaction={t} href={`/transactions/${t.id}/edit`} />
-                </li>
+                <TransactionRow key={t.id} transaction={t} href={`/transactions/${t.id}/edit`} />
               ))}
             </ul>
           </Card>
