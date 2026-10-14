@@ -6,7 +6,10 @@ export type Database = {
       accounts: {
         Row: {
           archived: boolean;
+          closing_day: number | null;
           created_at: string;
+          credit_limit: number | null;
+          due_day: number | null;
           id: string;
           initial_balance: number;
           name: string;
@@ -16,7 +19,10 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           archived?: boolean;
+          closing_day?: number | null;
           created_at?: string;
+          credit_limit?: number | null;
+          due_day?: number | null;
           id?: string;
           initial_balance?: number;
           name: string;
@@ -25,7 +31,10 @@ export type Database = {
         };
         Update: {
           archived?: boolean;
+          closing_day?: number | null;
           created_at?: string;
+          credit_limit?: number | null;
+          due_day?: number | null;
           id?: string;
           initial_balance?: number;
           name?: string;
@@ -396,6 +405,9 @@ export type Database = {
           external_id: string | null;
           id: string;
           import_batch_id: string | null;
+          installment_count: number | null;
+          installment_group_id: string | null;
+          installment_number: number | null;
           notes: string | null;
           recurring_rule_id: string | null;
           transfer_account_id: string | null;
@@ -413,6 +425,9 @@ export type Database = {
           external_id?: string | null;
           id?: string;
           import_batch_id?: string | null;
+          installment_count?: number | null;
+          installment_group_id?: string | null;
+          installment_number?: number | null;
           notes?: string | null;
           recurring_rule_id?: string | null;
           transfer_account_id?: string | null;
@@ -429,6 +444,9 @@ export type Database = {
           external_id?: string | null;
           id?: string;
           import_batch_id?: string | null;
+          installment_count?: number | null;
+          installment_group_id?: string | null;
+          installment_number?: number | null;
           notes?: string | null;
           recurring_rule_id?: string | null;
           transfer_account_id?: string | null;
@@ -486,7 +504,10 @@ export type Database = {
         Row: {
           archived: boolean | null;
           balance: number | null;
+          closing_day: number | null;
           created_at: string | null;
+          credit_limit: number | null;
+          due_day: number | null;
           id: string | null;
           initial_balance: number | null;
           name: string | null;

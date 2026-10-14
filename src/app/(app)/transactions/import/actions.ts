@@ -10,6 +10,7 @@ import { findDuplicates, type DuplicateReason } from "@/lib/import/duplicates";
 import { parseCsv } from "@/lib/import/parse-csv";
 import { looksLikeOfx, parseOfx } from "@/lib/import/parse-ofx";
 import { ImportFormatError, MAX_IMPORT_ROWS, type ParseResult } from "@/lib/import/types";
+import { parseInstallment } from "@/lib/credit-card";
 import { createClient } from "@/lib/supabase/server";
 
 const MAX_FILE_BYTES = 900 * 1024;
@@ -150,6 +151,12 @@ const confirmSchema = z.object({
     .max(MAX_IMPORT_ROWS),
 });
 
+/** "Loja - Parcela 3/12" on a card statement keeps its installment number. */
+function installmentColumns(description: string) {
+  const installment = parseInstallment(description);
+  return installment ? { installment_number: installment.number, installment_count: installment.count } : {};
+}
+
 export type ConfirmResult = { error?: string; imported?: number; batchId?: string; month?: string };
 
 /** Step 2: save the rows the user kept, tagged with one import batch id so they can be undone. */
@@ -168,6 +175,7 @@ export async function confirmImport(input: z.input<typeof confirmSchema>): Promi
   const batchId = crypto.randomUUID();
   const { error } = await supabase.from("transactions").insert(
     rows.map((row) => ({
+      ...installmentColumns(row.description),
       user_id: user.id,
       account_id: accountId,
       type: row.type,

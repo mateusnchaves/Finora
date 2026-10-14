@@ -7,6 +7,7 @@ import { Button, buttonClasses } from "@/components/ui/button";
 import { Field, FormError, SelectField, TextareaField } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
+import { MAX_INSTALLMENTS } from "@/lib/credit-card";
 import type { Account, Category, TransactionItem, TransactionType } from "@/lib/data/types";
 import { TRANSACTION_TYPE_LABELS } from "@/lib/data/types";
 import { formatMoneyInput } from "@/lib/format";
@@ -20,9 +21,16 @@ type Props = {
   transaction?: TransactionItem;
   defaultDate: string;
   cancelHref: string;
+  /** Prefilled values for a new transaction, e.g. a bill payment from the card page. */
+  defaults?: Partial<Record<"type" | "amount" | "description" | "accountId" | "transferAccountId", string>>;
 };
 
-function initialValues(transaction: TransactionItem | undefined, accounts: Account[], defaultDate: string) {
+function initialValues(
+  transaction: TransactionItem | undefined,
+  accounts: Account[],
+  defaultDate: string,
+  defaults: Props["defaults"] = {},
+) {
   if (transaction) {
     return {
       type: transaction.type,
@@ -46,12 +54,14 @@ function initialValues(transaction: TransactionItem | undefined, accounts: Accou
     categoryId: "",
     notes: "",
     repeatMonthly: "",
+    installments: "1",
+    ...defaults,
   };
 }
 
-export function TransactionForm({ accounts, categories, transaction, defaultDate, cancelHref }: Props) {
+export function TransactionForm({ accounts, categories, transaction, defaultDate, cancelHref, defaults }: Props) {
   const [state, action, pending] = useActionState(saveTransaction, initialFormState);
-  const values = { ...initialValues(transaction, accounts, defaultDate), ...state.values };
+  const values = { ...initialValues(transaction, accounts, defaultDate, defaults), ...state.values };
   const errors = state.fieldErrors ?? {};
   // Keyed by attempt so a failed submit remounts the form with what the user typed.
   return (
@@ -95,7 +105,10 @@ function FormFields({
   transactionId?: string;
 }) {
   const [type, setType] = useState<TransactionType>(values.type as TransactionType);
+  const [accountId, setAccountId] = useState(values.accountId);
   const isTransfer = type === "transfer";
+  const onCard = accounts.find((a) => a.id === accountId)?.type === "credit_card";
+  const canSplit = !isEdit && type === "expense" && onCard;
   const kindCategories = categories.filter((c) => c.kind === type);
 
   return (
@@ -180,6 +193,7 @@ function FormFields({
           name="accountId"
           defaultValue={values.accountId}
           error={errors.accountId}
+          onChange={(event) => setAccountId(event.target.value)}
         >
           {accounts.map((account) => (
             <option key={account.id} value={account.id}>
@@ -216,6 +230,23 @@ function FormFields({
           {kindCategories.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
+            </option>
+          ))}
+        </SelectField>
+      )}
+
+      {canSplit && (
+        <SelectField
+          label="Parcelas"
+          name="installments"
+          defaultValue={values.installments}
+          error={errors.installments}
+          hint="Informe o valor total da compra. Cada parcela entra na fatura do seu mês."
+        >
+          <option value="1">À vista</option>
+          {Array.from({ length: MAX_INSTALLMENTS - 1 }, (_, i) => i + 2).map((n) => (
+            <option key={n} value={n}>
+              {n}x
             </option>
           ))}
         </SelectField>

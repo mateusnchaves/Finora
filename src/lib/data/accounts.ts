@@ -3,7 +3,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Account } from "./types";
 
-const ACCOUNT_COLUMNS = "id, name, type, initial_balance, balance, archived, transaction_count";
+const ACCOUNT_COLUMNS =
+  "id, name, type, initial_balance, balance, archived, transaction_count, closing_day, due_day, credit_limit";
 
 type AccountRow = {
   id: string | null;
@@ -13,6 +14,9 @@ type AccountRow = {
   balance: number | null;
   archived: boolean | null;
   transaction_count: number | null;
+  closing_day: number | null;
+  due_day: number | null;
+  credit_limit: number | null;
 };
 
 function toAccount(row: AccountRow): Account {
@@ -24,6 +28,9 @@ function toAccount(row: AccountRow): Account {
     balance: Number(row.balance ?? 0),
     archived: row.archived ?? false,
     transactionCount: row.transaction_count ?? 0,
+    closingDay: row.closing_day,
+    dueDay: row.due_day,
+    creditLimit: row.credit_limit === null ? null : Number(row.credit_limit),
   };
 }
 

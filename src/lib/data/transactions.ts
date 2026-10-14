@@ -12,10 +12,10 @@ export type TransactionFilters = {
   search?: string;
 };
 
-const TRANSACTION_COLUMNS =
-  "id, type, amount, date, description, notes, account_id, transfer_account_id, category_id, created_at";
+export const TRANSACTION_COLUMNS =
+  "id, type, amount, date, description, notes, account_id, transfer_account_id, category_id, created_at, installment_group_id, installment_number, installment_count";
 
-type TransactionRow = {
+export type TransactionRow = {
   id: string;
   type: TransactionType;
   amount: number;
@@ -25,10 +25,22 @@ type TransactionRow = {
   account_id: string;
   transfer_account_id: string | null;
   category_id: string | null;
+  installment_group_id: string | null;
+  installment_number: number | null;
+  installment_count: number | null;
 };
 
+export type NameLookups = { accounts: Map<string, string>; categories: Map<string, string> };
+
+export function nameLookups(lookups: { accounts: Account[]; categories: Category[] }): NameLookups {
+  return {
+    accounts: new Map(lookups.accounts.map((a) => [a.id, a.name])),
+    categories: new Map(lookups.categories.map((c) => [c.id, c.name])),
+  };
+}
+
 /** Joins names in memory: accounts and categories are already loaded for the filters. */
-function toItem(row: TransactionRow, accounts: Map<string, string>, categories: Map<string, string>): TransactionItem {
+export function toTransactionItem(row: TransactionRow, { accounts, categories }: NameLookups): TransactionItem {
   return {
     id: row.id,
     type: row.type,
@@ -42,6 +54,9 @@ function toItem(row: TransactionRow, accounts: Map<string, string>, categories: 
     transferAccountName: row.transfer_account_id ? (accounts.get(row.transfer_account_id) ?? "Conta removida") : null,
     categoryId: row.category_id,
     categoryName: row.category_id ? (categories.get(row.category_id) ?? null) : null,
+    installmentGroupId: row.installment_group_id,
+    installmentNumber: row.installment_number,
+    installmentCount: row.installment_count,
   };
 }
 
@@ -77,9 +92,8 @@ export async function getTransactions(
   const { data, error } = await query;
   if (error) throw error;
 
-  const accountNames = new Map(lookups.accounts.map((a) => [a.id, a.name]));
-  const categoryNames = new Map(lookups.categories.map((c) => [c.id, c.name]));
-  return data.map((row) => toItem(row, accountNames, categoryNames));
+  const names = nameLookups(lookups);
+  return data.map((row) => toTransactionItem(row, names));
 }
 
 export async function getTransaction(
@@ -92,7 +106,5 @@ export async function getTransaction(
   if (error) throw error;
   if (!data) return null;
 
-  const accountNames = new Map(lookups.accounts.map((a) => [a.id, a.name]));
-  const categoryNames = new Map(lookups.categories.map((c) => [c.id, c.name]));
-  return toItem(data, accountNames, categoryNames);
+  return toTransactionItem(data, nameLookups(lookups));
 }

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { BalanceCard } from "@/components/finance/balance-card";
+import { BillStatusBadge } from "@/components/finance/bill-status";
 import { BudgetMeter } from "@/components/finance/budget-meter";
 import { MonthSwitcher } from "@/components/finance/month-switcher";
 import { MonthlyChart } from "@/components/finance/monthly-chart";
@@ -15,12 +16,16 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
 import { getAccounts } from "@/lib/data/accounts";
+import { getCardSummaries } from "@/lib/data/cards";
+import type { Account, Category } from "@/lib/data/types";
+import { cn } from "@/lib/cn";
+import { daysUntil } from "@/lib/credit-card";
 import { getNetWorth } from "@/lib/data/net-worth";
 import { getBudgetProgress, type BudgetProgress } from "@/lib/data/budgets";
 import { getCategories } from "@/lib/data/categories";
 import { getExpensesBetween, getHighlights, getMonthlyTotals, getSpendingByCategory } from "@/lib/data/dashboard";
 import { monthOf, parseMonthParam, sameDayIn, shiftMonth, todayISO } from "@/lib/dates";
-import { formatMoney, formatMonth, monthName } from "@/lib/format";
+import { formatMoney, formatMonth, formatShortDate, monthName } from "@/lib/format";
 import { transactionsHref } from "@/lib/transaction-filters";
 
 export const metadata: Metadata = { title: "Visão geral" };
@@ -105,6 +110,12 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<"/da
         comparison={comparison}
       />
 
+      {isCurrentMonth && (
+        <Suspense fallback={null}>
+          <CardsSection accounts={accounts} categories={categories} today={today} />
+        </Suspense>
+      )}
+
       {/* Net worth needs market quotes; it streams in on its own so the month summary is not held back. */}
       <Suspense fallback={<Card className="h-80" aria-hidden="true" />}>
         <NetWorthSection />
@@ -130,6 +141,51 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<"/da
         moreHref={transactionsHref({ month })}
       />
     </div>
+  );
+}
+
+/** Bills to pay now (closed or overdue) and what is building up on each card. */
+async function CardsSection({ accounts, categories, today }: { accounts: Account[]; categories: Category[]; today: string }) {
+  const summaries = await getCardSummaries(accounts, today, { accounts, categories });
+  if (summaries.length === 0) return null;
+
+  return (
+    <Card>
+      <CardTitle>Cartões</CardTitle>
+      <ul className="mt-3">
+        {summaries.map(({ card, current, previous, available }) => {
+          const toPay = previous.status === "closed" || previous.status === "overdue" ? previous : null;
+          const days = toPay ? daysUntil(toPay.bill.due, today) : 0;
+          const remaining = toPay ? toPay.total - toPay.paid : 0;
+          return (
+            <li key={card.id} className="border-b border-border last:border-b-0">
+              <Link
+                href={`/cards/${card.id}${toPay ? `?month=${toPay.bill.month}` : ""}`}
+                className="-mx-3 grid min-h-11 grid-cols-[1fr_auto] items-center gap-3 rounded-md px-3 py-3 hover:bg-brand-tint/60"
+              >
+                <span className="min-w-0">
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="truncate text-body font-medium text-ink">{card.name}</span>
+                    {toPay && <BillStatusBadge status={toPay.status} />}
+                  </span>
+                  <span className={cn("block text-body-sm", toPay?.status === "overdue" ? "text-negative" : "text-ink-muted")}>
+                    {toPay
+                      ? toPay.status === "overdue"
+                        ? `Venceu em ${formatShortDate(toPay.bill.due)}: faltam ${formatMoney(remaining)}`
+                        : `Vence ${days === 0 ? "hoje" : days === 1 ? "amanhã" : `em ${days} dias`} (${formatShortDate(toPay.bill.due)})`
+                      : `Fatura aberta: ${formatMoney(Math.max(current.total, 0))}, fecha em ${formatShortDate(current.bill.closing)}`}
+                    {available !== null && !toPay && ` · disponível ${formatMoney(available)}`}
+                  </span>
+                </span>
+                <span className="tabular text-right text-body font-semibold text-ink">
+                  {formatMoney(Math.max(toPay ? remaining : current.total, 0))}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </Card>
   );
 }
 

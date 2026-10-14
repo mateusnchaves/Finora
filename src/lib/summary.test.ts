@@ -16,6 +16,9 @@ function tx(partial: Partial<TransactionItem>): TransactionItem {
     transferAccountName: null,
     categoryId: null,
     categoryName: null,
+    installmentGroupId: null,
+    installmentNumber: null,
+    installmentCount: null,
     ...partial,
   };
 }

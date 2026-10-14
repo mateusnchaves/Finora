@@ -2,6 +2,7 @@ import "server-only";
 import { getCurrentUser } from "@/lib/auth";
 import { monthOf, monthRange, shiftMonth } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
+import { nameLookups, toTransactionItem, TRANSACTION_COLUMNS, type TransactionRow } from "./transactions";
 import type { Account, Category, TransactionItem } from "./types";
 
 export type MonthTotals = { month: string; income: number; expenses: number };
@@ -60,7 +61,6 @@ export async function getSpendingByCategory(month: string): Promise<CategorySpen
 
 type Lookups = { accounts: Account[]; categories: Category[] };
 
-const COLUMNS = "id, type, amount, date, description, notes, account_id, transfer_account_id, category_id";
 
 /** Largest expenses of the month, or the latest movements of any type. */
 export async function getHighlights(
@@ -74,7 +74,7 @@ export async function getHighlights(
   const [top, latest] = await Promise.all([
     supabase
       .from("transactions")
-      .select(COLUMNS)
+      .select(TRANSACTION_COLUMNS)
       .eq("type", "expense")
       .gte("date", start)
       .lt("date", end)
@@ -82,7 +82,7 @@ export async function getHighlights(
       .limit(5),
     supabase
       .from("transactions")
-      .select(COLUMNS)
+      .select(TRANSACTION_COLUMNS)
       .gte("date", start)
       .lt("date", end)
       .order("date", { ascending: false })
@@ -92,22 +92,8 @@ export async function getHighlights(
   if (top.error) throw top.error;
   if (latest.error) throw latest.error;
 
-  const accountNames = new Map(lookups.accounts.map((a) => [a.id, a.name]));
-  const categoryNames = new Map(lookups.categories.map((c) => [c.id, c.name]));
-  const toItem = (row: (typeof top.data)[number]): TransactionItem => ({
-    id: row.id,
-    type: row.type,
-    amount: Number(row.amount),
-    date: row.date,
-    description: row.description,
-    notes: row.notes,
-    accountId: row.account_id,
-    accountName: accountNames.get(row.account_id) ?? "Conta removida",
-    transferAccountId: row.transfer_account_id,
-    transferAccountName: row.transfer_account_id ? (accountNames.get(row.transfer_account_id) ?? null) : null,
-    categoryId: row.category_id,
-    categoryName: row.category_id ? (categoryNames.get(row.category_id) ?? null) : null,
-  });
+  const names = nameLookups(lookups);
+  const toItem = (row: TransactionRow) => toTransactionItem(row, names);
 
   return { topExpenses: top.data.map(toItem), latest: latest.data.map(toItem) };
 }

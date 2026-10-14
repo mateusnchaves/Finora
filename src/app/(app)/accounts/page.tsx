@@ -105,7 +105,7 @@ function AccountRow({ account }: { account: Account }) {
   const overdrawn = !isCard && account.balance < 0;
   const caption = isCard
     ? account.balance < 0
-      ? "Fatura atual"
+      ? `Em aberto${account.closingDay ? ` · fecha dia ${account.closingDay}` : ""}`
       : "Sem fatura em aberto"
     : overdrawn
       ? "Saldo negativo"
@@ -114,7 +114,8 @@ function AccountRow({ account }: { account: Account }) {
   return (
     <li className="border-b border-border last:border-b-0">
       <Link
-        href={`/accounts/${account.id}/edit`}
+        // A configured card opens its bill; the edit link is on that page.
+        href={isCard && account.closingDay ? `/cards/${account.id}` : `/accounts/${account.id}/edit`}
         className="-mx-3 grid min-h-11 grid-cols-[40px_1fr_auto] items-center gap-3 rounded-md px-3 py-3.5 transition-colors hover:bg-brand-tint/60"
       >
         <span className="grid size-10 place-items-center rounded-pill bg-brand-tint text-brand" aria-hidden="true">

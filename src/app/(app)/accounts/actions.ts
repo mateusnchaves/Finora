@@ -8,7 +8,11 @@ import { parseMoney } from "@/lib/format";
 import { emptyToUndefined, failed, fieldErrorsFrom, formValues, type FormState } from "@/lib/forms";
 import { createClient } from "@/lib/supabase/server";
 
-const accountSchema = z.object({
+const dayField = (message: string) =>
+  z.preprocess(emptyToUndefined, z.coerce.number({ error: message }).int(message).min(1, message).max(31, message).optional());
+
+const accountSchema = z
+  .object({
   id: z.preprocess(emptyToUndefined, z.uuid().optional()),
   name: z.string().trim().min(1, "Dê um nome à conta, como “Nubank”.").max(60, "Use no máximo 60 caracteres."),
   type: z.enum(["checking", "savings", "wallet", "credit_card"], { error: "Escolha o tipo da conta." }),
@@ -24,12 +28,30 @@ const accountSchema = z.object({
     return negative ? -amount : amount;
   }),
   archived: z.preprocess((value) => value === "on", z.boolean()),
-});
+  closingDay: dayField("Use um dia entre 1 e 31."),
+  dueDay: dayField("Use um dia entre 1 e 31."),
+  creditLimit: z.preprocess(emptyToUndefined, z.string().optional()).transform((value, ctx) => {
+    if (!value) return undefined;
+    const amount = parseMoney(value);
+    if (amount === null || amount <= 0) {
+      ctx.addIssue({ code: "custom", message: "Informe um limite como 5.000,00." });
+      return z.NEVER;
+    }
+    return amount;
+  }),
+  })
+  .superRefine((data, ctx) => {
+    if (data.type !== "credit_card") return;
+    // Bills need both days.
+    if (!data.closingDay) ctx.addIssue({ code: "custom", path: ["closingDay"], message: "Informe o dia em que a fatura fecha." });
+    if (!data.dueDay) ctx.addIssue({ code: "custom", path: ["dueDay"], message: "Informe o dia do vencimento." });
+  });
 
 function revalidateAccountViews() {
   revalidatePath("/accounts");
   revalidatePath("/transactions");
   revalidatePath("/dashboard");
+  revalidatePath("/cards", "layout");
 }
 
 export async function saveAccount(state: FormState, formData: FormData): Promise<FormState> {
@@ -39,8 +61,17 @@ export async function saveAccount(state: FormState, formData: FormData): Promise
 
   const user = await getCurrentUser();
   const supabase = await createClient();
-  const { id, name, type, initialBalance, archived } = parsed.data;
-  const row = { name, type, initial_balance: initialBalance, archived };
+  const { id, name, type, initialBalance, archived, closingDay, dueDay, creditLimit } = parsed.data;
+  const isCard = type === "credit_card";
+  const row = {
+    name,
+    type,
+    initial_balance: initialBalance,
+    archived,
+    closing_day: isCard ? closingDay! : null,
+    due_day: isCard ? dueDay! : null,
+    credit_limit: isCard ? (creditLimit ?? null) : null,
+  };
 
   const { data: saved, error } = id
     ? await supabase.from("accounts").update(row).eq("id", id).select("id")

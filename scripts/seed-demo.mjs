@@ -55,6 +55,7 @@ const db = new pg.Client({ connectionString: dbUrl });
 await db.connect();
 try {
   await db.query("select private.seed_demo_data($1)", [user.id]);
+  await db.query("select private.seed_demo_cards($1)", [user.id]);
   await db.query("select private.seed_demo_investments($1)", [user.id]);
   await db.query("select private.seed_demo_fixed_income($1)", [user.id]);
   const { rows } = await db.query(

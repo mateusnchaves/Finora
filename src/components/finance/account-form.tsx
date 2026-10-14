@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { saveAccount } from "@/app/(app)/accounts/actions";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Field, FormError, SelectField } from "@/components/ui/field";
@@ -15,6 +15,60 @@ function formatInitialBalance(value: number) {
   return value < 0 ? `-${formatMoneyInput(-value)}` : formatMoneyInput(value);
 }
 
+/** The type select, plus closing day, due day and limit when the account is a credit card. */
+function CardAwareFields({ values, errors }: { values: Record<string, string>; errors: Record<string, string> }) {
+  const [type, setType] = useState(values.type);
+  return (
+    <>
+      <SelectField
+        label="Tipo"
+        name="type"
+        defaultValue={values.type}
+        error={errors.type}
+        onChange={(event) => setType(event.target.value)}
+      >
+        {TYPES.map((option) => (
+          <option key={option} value={option}>
+            {ACCOUNT_TYPE_LABELS[option]}
+          </option>
+        ))}
+      </SelectField>
+      {type === "credit_card" && (
+        <fieldset className="flex flex-col gap-5 rounded-md bg-brand-tint/50 p-4">
+          <legend className="sr-only">Fatura do cartão</legend>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field
+              label="Dia do fechamento"
+              name="closingDay"
+              inputMode="numeric"
+              placeholder="3"
+              defaultValue={values.closingDay}
+              error={errors.closingDay}
+              hint="Compras a partir deste dia vão para a fatura seguinte."
+            />
+            <Field
+              label="Dia do vencimento"
+              name="dueDay"
+              inputMode="numeric"
+              placeholder="10"
+              defaultValue={values.dueDay}
+              error={errors.dueDay}
+            />
+          </div>
+          <Field
+            label="Limite (opcional)"
+            name="creditLimit"
+            inputMode="decimal"
+            placeholder="5.000,00"
+            defaultValue={values.creditLimit}
+            error={errors.creditLimit}
+          />
+        </fieldset>
+      )}
+    </>
+  );
+}
+
 export function AccountForm({ account }: { account?: Account }) {
   const [state, action, pending] = useActionState(saveAccount, initialFormState);
   const values: Record<string, string> = {
@@ -22,6 +76,9 @@ export function AccountForm({ account }: { account?: Account }) {
     type: account?.type ?? "checking",
     initialBalance: account ? formatInitialBalance(account.initialBalance) : "",
     archived: account?.archived ? "on" : "",
+    closingDay: account?.closingDay ? String(account.closingDay) : "",
+    dueDay: account?.dueDay ? String(account.dueDay) : "",
+    creditLimit: account?.creditLimit ? formatMoneyInput(account.creditLimit) : "",
     ...state.values,
   };
   const errors = state.fieldErrors ?? {};
@@ -40,13 +97,7 @@ export function AccountForm({ account }: { account?: Account }) {
         error={errors.name}
         autoFocus={!account}
       />
-      <SelectField label="Tipo" name="type" defaultValue={values.type} error={errors.type}>
-        {TYPES.map((type) => (
-          <option key={type} value={type}>
-            {ACCOUNT_TYPE_LABELS[type]}
-          </option>
-        ))}
-      </SelectField>
+      <CardAwareFields values={values} errors={errors} />
       <Field
         label="Saldo inicial"
         name="initialBalance"

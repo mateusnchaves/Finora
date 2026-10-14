@@ -5,11 +5,12 @@ import { TransactionForm } from "@/components/finance/transaction-form";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { ConfirmButton } from "@/components/ui/confirm-button";
+import { Icon } from "@/components/ui/icon";
 import { getAccounts } from "@/lib/data/accounts";
 import { getCategories } from "@/lib/data/categories";
 import { getTransaction } from "@/lib/data/transactions";
 import { monthOf, todayISO } from "@/lib/dates";
-import { deleteTransaction } from "../../actions";
+import { deleteInstallmentGroup, deleteTransaction } from "../../actions";
 
 export const metadata: Metadata = { title: "Editar lançamento" };
 
@@ -40,8 +41,17 @@ async function EditTransactionForm({ params }: { params: PageProps<"/transaction
   );
   const month = monthOf(transaction.date);
 
+  const isInstallment = transaction.installmentNumber !== null;
+
   return (
     <div className="flex flex-col gap-6">
+      {isInstallment && (
+        <p role="note" className="flex items-start gap-2 rounded-md bg-brand-tint px-3.5 py-3 text-body-sm text-ink">
+          <Icon name="credit_card" size={18} className="mt-px shrink-0 text-brand" />
+          Parcela {transaction.installmentNumber} de {transaction.installmentCount}. As alterações valem só para esta
+          parcela.
+        </p>
+      )}
       <Card>
         <TransactionForm
           accounts={selectableAccounts}
@@ -57,11 +67,26 @@ async function EditTransactionForm({ params }: { params: PageProps<"/transaction
           <p className="mt-1 text-body-sm text-ink-muted">Ele sai do extrato e dos saldos. Não dá para desfazer.</p>
         </div>
         <ConfirmButton
-          label="Excluir"
+          label={isInstallment ? "Excluir esta parcela" : "Excluir"}
           confirmLabel="Confirmar exclusão"
           action={deleteTransaction.bind(null, transaction.id, month)}
         />
       </Card>
+      {transaction.installmentGroupId && (
+        <Card className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="font-display text-heading-md text-ink">Excluir a compra inteira</h2>
+            <p className="mt-1 text-body-sm text-ink-muted">
+              Remove as {transaction.installmentCount} parcelas de todas as faturas.
+            </p>
+          </div>
+          <ConfirmButton
+            label="Excluir todas as parcelas"
+            confirmLabel="Confirmar exclusão"
+            action={deleteInstallmentGroup.bind(null, transaction.installmentGroupId, month)}
+          />
+        </Card>
+      )}
     </div>
   );
 }

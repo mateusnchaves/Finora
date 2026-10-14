@@ -12,6 +12,10 @@ export type Account = {
   balance: number;
   archived: boolean;
   transactionCount: number;
+  /** Credit cards only; null until the user fills them in. */
+  closingDay: number | null;
+  dueDay: number | null;
+  creditLimit: number | null;
 };
 
 export type Category = {
@@ -33,6 +37,9 @@ export type TransactionItem = {
   transferAccountName: string | null;
   categoryId: string | null;
   categoryName: string | null;
+  installmentGroupId: string | null;
+  installmentNumber: number | null;
+  installmentCount: number | null;
 };
 
 export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {

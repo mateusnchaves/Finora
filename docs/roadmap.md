@@ -35,15 +35,15 @@ notificações de fatura, orçamento e metas.
 - [x] Monitoramento de erros: tabela própria no Supabase (`npm run errors`), sem serviço externo
 
 ### Fase 10 — Cartão de crédito de verdade
-- [ ] Cartão ganha dia de fechamento, dia de vencimento e limite
-- [ ] Tela da fatura: aberta, fechada e próximas; total e itens de cada uma
-- [ ] Compra parcelada: "12x de R$ 150" gera 12 lançamentos ligados (`installment_group_id`),
-      cada um na fatura do seu mês; editar ou excluir o grupo inteiro
-- [ ] Orçamento conta cada parcela no mês da fatura
-- [ ] Pagar fatura = transferência da conta corrente para o cartão (não conta duas vezes)
-- [ ] Limite disponível e alerta de fatura vencendo
-- [ ] Importação: reconhecer "Parcela 3/12" no CSV do Nubank
-- [ ] Testes: cálculo de fatura (compra no dia do fechamento, meses curtos, virada de ano)
+- [x] Cartão ganha dia de fechamento, dia de vencimento e limite
+- [x] Tela da fatura: aberta, fechada e próximas; total e itens de cada uma
+- [x] Compra parcelada: "12x de R$ 150" gera 12 lançamentos ligados (`installment_group_id`),
+      cada um na fatura do seu mês; excluir o grupo inteiro (editar vale por parcela)
+- [x] Orçamento conta cada parcela no mês dela
+- [x] Pagar fatura = transferência da conta corrente para o cartão (não conta duas vezes)
+- [x] Limite disponível e aviso de fatura vencendo no dashboard
+- [x] Importação: reconhecer "Parcela 3/12" no CSV do Nubank
+- [x] Testes: cálculo de fatura (compra no dia do fechamento, meses curtos, virada de ano)
 
 ### Fase 11 — Metas ("caixinhas")
 - [ ] Criar meta: nome, ícone, valor-alvo e prazo ("Viagem: R$ 8.000 até jul/2027")

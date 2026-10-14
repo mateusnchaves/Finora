@@ -50,7 +50,10 @@ export function TransactionRow({
   const label = isTransfer
     ? `${transaction.accountName} → ${transaction.transferAccountName}`
     : (transaction.categoryName ?? UNCATEGORIZED);
-  const meta = showDate ? `${label} · ${formatShortDate(transaction.date)}` : label;
+  const installment = transaction.installmentNumber
+    ? `Parcela ${transaction.installmentNumber}/${transaction.installmentCount}`
+    : null;
+  const meta = [label, installment, showDate ? formatShortDate(transaction.date) : null].filter(Boolean).join(" · ");
 
   const content = (
     <>

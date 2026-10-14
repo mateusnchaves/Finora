@@ -29,6 +29,8 @@ every night.
 - Transactions with month navigation, filters by type, account and category, search, and day grouping.
 - Dashboard: balance, month income and expenses compared with the same days of last month,
   spending by category, six-month income vs. expenses chart, largest expenses, net worth over time.
+- Credit card bills: closing and due days, open/closed/paid/overdue status, installments ("3x")
+  spread over the next bills, one-click bill payment and available limit.
 - Monthly budgets per category, with near-limit and over-limit alerts.
 - Recurring transactions (salary, rent, subscriptions) created daily by a database job.
 - Bank statement import (OFX and CSV) with category suggestions learned from your own history,
@@ -141,6 +143,20 @@ Valued from Banco Central SGS series (CDI = 12, Selic = 11, IPCA = 433), cached 
 
 Values are estimates: banks round differently, IOF applies in the first 30 days, and Tesouro
 titles are marked to market. The UI says so.
+
+### Credit card bills
+
+Card math lives in `src/lib/credit-card.ts`. A bill is named after its due month and closes on the
+closing day (clamped to short months); a purchase made on the closing day already goes to the next
+bill. When the due day is after the closing day the bill is due that same month, otherwise the next.
+
+- **Installments**: "3x de R$ 100" saves three transactions sharing `installment_group_id`, one
+  per month on the purchase day (clamped), so each lands in its own bill and budget month. Cents
+  are split exactly, with the rounding on the first one. Imported card statements keep
+  "Parcela 3/12" as the installment number.
+- **Payments** are transfers into the card. One counts toward the bill that closed before it (from
+  that closing date to the next one), which is when people pay.
+- **Available limit** is the limit minus everything owed on the card, future installments included.
 
 ### Error monitoring
 

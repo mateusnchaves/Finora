@@ -5,7 +5,8 @@ try {
   process.loadEnvFile(".env.local");
 } catch {}
 
-const PORT = 3100;
+// Next allows one dev server per project, so locally the tests reuse the one on 3000.
+const PORT = 3000;
 const baseURL = `http://localhost:${PORT}`;
 
 export default defineConfig({

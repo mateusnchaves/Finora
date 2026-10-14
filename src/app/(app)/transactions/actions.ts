@@ -4,10 +4,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
+import { installmentDate, MAX_INSTALLMENTS, splitInstallments } from "@/lib/credit-card";
 import { isISODate, monthOf } from "@/lib/dates";
 import { parseMoney } from "@/lib/format";
 import { emptyToUndefined, failed, fieldErrorsFrom, formValues, type FormState } from "@/lib/forms";
+import type { Database } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
+
+type TransactionInsert = Database["public"]["Tables"]["transactions"]["Insert"];
 
 const MAX_AMOUNT = 999_999_999.99;
 
@@ -40,6 +44,10 @@ const transactionSchema = z
     categoryId: z.preprocess(emptyToUndefined, z.uuid().optional()),
     notes: z.preprocess(emptyToUndefined, z.string().trim().max(500, "Use no máximo 500 caracteres.").optional()),
     repeatMonthly: z.preprocess((value) => value === "on", z.boolean()),
+    installments: z.preprocess(
+      (value) => (value === undefined || value === "" ? 1 : value),
+      z.coerce.number().int().min(1).max(MAX_INSTALLMENTS, `Use até ${MAX_INSTALLMENTS} parcelas.`),
+    ),
   })
   .superRefine((data, ctx) => {
     if (data.type !== "transfer") return;
@@ -51,6 +59,7 @@ const transactionSchema = z
   });
 
 function revalidateFinanceViews() {
+  revalidatePath("/cards", "layout");
   revalidatePath("/transactions");
   revalidatePath("/budgets");
   revalidatePath("/accounts");
@@ -91,6 +100,10 @@ export async function saveTransaction(state: FormState, formData: FormData): Pro
     category_id: isTransfer ? null : (data.categoryId ?? null),
     notes: data.notes ?? null,
   };
+
+  if (!data.id && data.installments > 1) {
+    return saveInstallments(state, values, { ...data, userId: user.id, row });
+  }
 
   // "Repetir todo mês": the rule starts on this date and this transaction is its first occurrence.
   let recurringRuleId: string | null = null;
@@ -142,6 +155,58 @@ export async function saveTransaction(state: FormState, formData: FormData): Pro
 
   revalidateFinanceViews();
   redirect(`/transactions?month=${monthOf(data.date)}`);
+}
+
+type ParsedTransaction = z.infer<typeof transactionSchema>;
+
+/** "3x de R$ 100": one transaction per month on the card, linked by installment_group_id. */
+async function saveInstallments(
+  state: FormState,
+  values: Record<string, string>,
+  data: ParsedTransaction & { userId: string; row: Omit<TransactionInsert, "user_id"> },
+): Promise<FormState> {
+  const supabase = await createClient();
+  if (data.type !== "expense") {
+    return failed(state, values, { fieldErrors: { installments: "Só despesas podem ser parceladas." } });
+  }
+  if (data.repeatMonthly) {
+    return failed(state, values, { fieldErrors: { installments: "Uma compra parcelada não se repete todo mês." } });
+  }
+  const { data: account } = await supabase.from("accounts").select("type").eq("id", data.accountId).maybeSingle();
+  if (account?.type !== "credit_card") {
+    return failed(state, values, { fieldErrors: { installments: "Parcele compras no cartão de crédito." } });
+  }
+
+  const groupId = crypto.randomUUID();
+  const amounts = splitInstallments(data.amount, data.installments);
+  const rows: TransactionInsert[] = amounts.map((amount, i) => ({
+    ...data.row,
+    user_id: data.userId,
+    amount,
+    date: installmentDate(data.date, i + 1),
+    installment_group_id: groupId,
+    installment_number: i + 1,
+    installment_count: data.installments,
+  }));
+
+  const { error } = await supabase.from("transactions").insert(rows);
+  if (error) return failed(state, values, { error: "Não foi possível salvar agora. Tente de novo em instantes." });
+
+  revalidateFinanceViews();
+  redirect(`/transactions?month=${monthOf(data.date)}`);
+}
+
+/** Deletes every installment of a purchase. */
+export async function deleteInstallmentGroup(groupId: string, month: string): Promise<{ error?: string }> {
+  if (!z.uuid().safeParse(groupId).success) return { error: "Compra inválida." };
+
+  await getCurrentUser();
+  const supabase = await createClient();
+  const { error } = await supabase.from("transactions").delete().eq("installment_group_id", groupId);
+  if (error) return { error: "Não foi possível excluir agora. Tente de novo em instantes." };
+
+  revalidateFinanceViews();
+  redirect(`/transactions?month=${/^\d{4}-\d{2}$/.test(month) ? month : ""}`);
 }
 
 export async function deleteTransaction(id: string, month: string): Promise<{ error?: string }> {
