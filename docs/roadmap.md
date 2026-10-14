@@ -46,13 +46,13 @@ notificações de fatura, orçamento e metas.
 - [x] Testes: cálculo de fatura (compra no dia do fechamento, meses curtos, virada de ano)
 
 ### Fase 11 — Metas ("caixinhas")
-- [ ] Criar meta: nome, ícone, valor-alvo e prazo ("Viagem: R$ 8.000 até jul/2027")
-- [ ] Guardar dinheiro na meta (aportes e retiradas), ligada opcionalmente a uma conta ou
-      investimento
-- [ ] Progresso: quanto já tem, quanto falta e quanto guardar por mês para chegar no prazo
-- [ ] Status: no ritmo, atrasada, concluída (sempre com cor + palavra)
-- [ ] Card de metas no dashboard
-- [ ] Testes: valor mensal necessário, metas vencidas, meta sem prazo
+- [x] Criar meta: nome, ícone, valor-alvo e prazo ("Viagem: R$ 8.000 até jul/2027")
+- [x] Guardar dinheiro na meta (aportes e retiradas), ligada opcionalmente a uma conta
+      (ligar a um investimento fica para depois)
+- [x] Progresso: quanto já tem, quanto falta e quanto guardar por mês para chegar no prazo
+- [x] Status: no ritmo, atrasada, concluída (sempre com cor + palavra)
+- [x] Card de metas no dashboard
+- [x] Testes: valor mensal necessário, metas vencidas, meta sem prazo
 
 ### Fase 12 — Insights com IA
 - [ ] Resumo do mês escrito pela IA ("Delivery subiu 18%, puxado pelo iFood de sexta à noite")

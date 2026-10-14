@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { BalanceCard } from "@/components/finance/balance-card";
 import { BillStatusBadge } from "@/components/finance/bill-status";
+import { GoalSummary } from "@/components/finance/goal-summary";
 import { BudgetMeter } from "@/components/finance/budget-meter";
 import { MonthSwitcher } from "@/components/finance/month-switcher";
 import { MonthlyChart } from "@/components/finance/monthly-chart";
@@ -17,14 +18,14 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
 import { getAccounts } from "@/lib/data/accounts";
 import { getCardSummaries } from "@/lib/data/cards";
+import { getGoals } from "@/lib/data/goals";
 import type { Account, Category } from "@/lib/data/types";
 import { cn } from "@/lib/cn";
-import { daysUntil } from "@/lib/credit-card";
 import { getNetWorth } from "@/lib/data/net-worth";
 import { getBudgetProgress, type BudgetProgress } from "@/lib/data/budgets";
 import { getCategories } from "@/lib/data/categories";
 import { getExpensesBetween, getHighlights, getMonthlyTotals, getSpendingByCategory } from "@/lib/data/dashboard";
-import { monthOf, parseMonthParam, sameDayIn, shiftMonth, todayISO } from "@/lib/dates";
+import { daysUntil, monthOf, parseMonthParam, sameDayIn, shiftMonth, todayISO } from "@/lib/dates";
 import { formatMoney, formatMonth, formatShortDate, monthName } from "@/lib/format";
 import { transactionsHref } from "@/lib/transaction-filters";
 
@@ -125,6 +126,12 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<"/da
 
       {budgets.length > 0 && <BudgetsSummary budgets={budgets} month={month} isCurrentMonth={isCurrentMonth} />}
 
+      {isCurrentMonth && (
+        <Suspense fallback={null}>
+          <GoalsSection today={today} />
+        </Suspense>
+      )}
+
       <MonthlyChart data={monthly} currentMonth={month} />
 
       <TransactionList
@@ -185,6 +192,30 @@ async function CardsSection({ accounts, categories, today }: { accounts: Account
           );
         })}
       </ul>
+    </Card>
+  );
+}
+
+/** The goals that need attention first (late ones on top), at most three. */
+async function GoalsSection({ today }: { today: string }) {
+  const goals = (await getGoals(today)).filter((g) => g.progress.status !== "done");
+  if (goals.length === 0) return null;
+
+  return (
+    <Card>
+      <CardTitle>Metas</CardTitle>
+      <ul className="mt-2">
+        {goals.slice(0, 3).map((goal) => (
+          <GoalSummary key={goal.id} goal={goal} />
+        ))}
+      </ul>
+      <Link
+        href="/goals"
+        className="-mx-2 mt-3 inline-flex min-h-11 items-center gap-1 rounded-md px-2 text-body-sm font-semibold text-brand hover:bg-brand-tint"
+      >
+        Ver todas as metas
+        <Icon name="chevron_right" size={18} />
+      </Link>
     </Card>
   );
 }

@@ -92,11 +92,6 @@ export function parseInstallment(description: string): { number: number; count: 
   return { number, count };
 }
 
-/** Whole days from today until a date (negative when it has passed). */
-export function daysUntil(date: string, today: string): number {
-  return Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
-}
-
 export const BILL_STATUS_LABELS: Record<BillStatus, string> = {
   open: "Aberta",
   closed: "Fechada",

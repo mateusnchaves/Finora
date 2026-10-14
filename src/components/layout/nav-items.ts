@@ -9,9 +9,10 @@ export type NavItem = {
 
 export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Visão geral", shortLabel: "Início", icon: "home" },
-  { href: "/transactions", label: "Lançamentos", shortLabel: "Lançamentos", icon: "receipt_long" },
+  { href: "/transactions", label: "Lançamentos", shortLabel: "Extrato", icon: "receipt_long" },
   { href: "/accounts", label: "Contas", shortLabel: "Contas", icon: "account_balance_wallet" },
-  { href: "/budgets", label: "Orçamentos", shortLabel: "Orçamentos", icon: "donut_large" },
+  { href: "/budgets", label: "Orçamentos", shortLabel: "Orçamento", icon: "donut_large" },
+  { href: "/goals", label: "Metas", shortLabel: "Metas", icon: "flag" },
   { href: "/investments", label: "Investimentos", shortLabel: "Investir", icon: "trending_up" },
 ];
 

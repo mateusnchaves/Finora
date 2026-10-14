@@ -226,6 +226,104 @@ export type Database = {
         };
         Relationships: [];
       };
+      goal_contributions: {
+        Row: {
+          amount: number;
+          created_at: string;
+          date: string;
+          goal_id: string;
+          id: string;
+          note: string | null;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          amount: number;
+          created_at?: string;
+          date: string;
+          goal_id: string;
+          id?: string;
+          note?: string | null;
+          user_id?: string;
+        };
+        Update: {
+          amount?: number;
+          created_at?: string;
+          date?: string;
+          goal_id?: string;
+          id?: string;
+          note?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "goal_contributions_goal_id_user_id_fkey";
+            columns: ["goal_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "goal_progress";
+            referencedColumns: ["id", "user_id"];
+          },
+          {
+            foreignKeyName: "goal_contributions_goal_id_user_id_fkey";
+            columns: ["goal_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "goals";
+            referencedColumns: ["id", "user_id"];
+          },
+        ];
+      };
+      goals: {
+        Row: {
+          account_id: string | null;
+          created_at: string;
+          icon: string;
+          id: string;
+          name: string;
+          start_date: string;
+          target_amount: number;
+          target_date: string | null;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          account_id?: string | null;
+          created_at?: string;
+          icon?: string;
+          id?: string;
+          name: string;
+          start_date?: string;
+          target_amount: number;
+          target_date?: string | null;
+          user_id?: string;
+        };
+        Update: {
+          account_id?: string | null;
+          created_at?: string;
+          icon?: string;
+          id?: string;
+          name?: string;
+          start_date?: string;
+          target_amount?: number;
+          target_date?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "goals_account_id_user_id_fkey";
+            columns: ["account_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "account_balances";
+            referencedColumns: ["id", "user_id"];
+          },
+          {
+            foreignKeyName: "goals_account_id_user_id_fkey";
+            columns: ["account_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id", "user_id"];
+          },
+        ];
+      };
       index_rates: {
         Row: {
           date: string;
@@ -525,6 +623,39 @@ export type Database = {
         };
         ComputedFields: never;
         Relationships: [];
+      };
+      goal_progress: {
+        Row: {
+          account_id: string | null;
+          contribution_count: number | null;
+          created_at: string | null;
+          icon: string | null;
+          id: string | null;
+          last_contribution: string | null;
+          name: string | null;
+          saved: number | null;
+          start_date: string | null;
+          target_amount: number | null;
+          target_date: string | null;
+          user_id: string | null;
+        };
+        ComputedFields: never;
+        Relationships: [
+          {
+            foreignKeyName: "goals_account_id_user_id_fkey";
+            columns: ["account_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "account_balances";
+            referencedColumns: ["id", "user_id"];
+          },
+          {
+            foreignKeyName: "goals_account_id_user_id_fkey";
+            columns: ["account_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id", "user_id"];
+          },
+        ];
       };
     };
     Functions: {

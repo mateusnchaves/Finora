@@ -32,6 +32,8 @@ every night.
 - Credit card bills: closing and due days, open/closed/paid/overdue status, installments ("3x")
   spread over the next bills, one-click bill payment and available limit.
 - Monthly budgets per category, with near-limit and over-limit alerts.
+- Savings goals: target, optional deadline, deposits and withdrawals, "on track" or "behind"
+  status and how much to set aside each month.
 - Recurring transactions (salary, rent, subscriptions) created daily by a database job.
 - Bank statement import (OFX and CSV) with category suggestions learned from your own history,
   duplicate detection and one-click undo.
@@ -157,6 +159,15 @@ bill. When the due day is after the closing day the bill is due that same month,
 - **Payments** are transfers into the card. One counts toward the bill that closed before it (from
   that closing date to the next one), which is when people pay.
 - **Available limit** is the limit minus everything owed on the card, future installments included.
+
+### Savings goals
+
+A goal has a target, an optional deadline and a history of contributions (negative ones are
+withdrawals, never below zero). Contributions set money aside without moving it between accounts,
+so balances and reports are untouched; the optional account only says where the money is kept.
+The pace is linear (`src/lib/goals.ts`): halfway to the deadline, half the target should be
+saved. More than 10% under that line is "atrasada"; the monthly amount spreads what is left over
+the calendar months until the deadline, counting the current one.
 
 ### Error monitoring
 

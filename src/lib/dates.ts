@@ -59,3 +59,8 @@ export function daysInMonth(month: string): number {
 export function sameDayIn(month: string, day: number): string {
   return `${month}-${String(Math.min(day, daysInMonth(month))).padStart(2, "0")}`;
 }
+
+/** Whole days from today until a date (negative when it has passed). */
+export function daysUntil(date: string, today: string): number {
+  return Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
+}

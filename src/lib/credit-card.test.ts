@@ -3,12 +3,12 @@ import {
   billByDueMonth,
   billForDate,
   billStatus,
-  daysUntil,
   installmentDate,
   parseInstallment,
   paymentWindow,
   splitInstallments,
 } from "./credit-card";
+import { daysUntil } from "./dates";
 
 // Closes on the 3rd, due on the 10th (same month).
 const nubank = { closingDay: 3, dueDay: 10 };
