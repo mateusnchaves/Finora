@@ -108,7 +108,8 @@ export function financeTools(context: ToolContext): FinanceTool[] {
         accountName: accountNames.get(r.account_id) ?? "Conta removida",
       }));
 
-      addSources(
+      // Only lookups that found something are worth linking to.
+      if (rows.length > 0) addSources(
         context,
         sourceLinks(
           { start: input.start_date, end: input.end_date },
@@ -148,7 +149,6 @@ export function financeTools(context: ToolContext): FinanceTool[] {
         getGoals(context.today),
         getCardSummaries(context.accounts, context.today, context),
       ]);
-      addSources(context, [{ label: "Contas e saldos", href: "/accounts" }]);
 
       return JSON.stringify({
         today: context.today,

@@ -178,7 +178,8 @@ the calendar months until the deadline, counting the current one.
 ### Assistente (AI)
 
 The assistant runs on the server with the Google Gen AI SDK (`gemini-3.8-flash` on the free tier,
-low thinking; `GEMINI_MODEL` swaps it). The question loop is a plain function-calling loop
+low thinking; `GEMINI_MODEL` swaps it). Overload errors are retried after 1, 2 and 4 seconds, then the
+request runs once on `gemini-3.5-flash-lite`; a conversation stays on one model. The question loop is a plain function-calling loop
 (`src/lib/ai/ask.ts`, at most six turns), and tool input is validated with the same Zod schemas
 that are sent to the model as JSON Schema. Two read-only tools (`src/lib/ai/tools.ts`) are all it can use:
 `find_transactions` (sum, group and list transactions in a period, with type, category, account and

@@ -2,7 +2,7 @@ import "server-only";
 import type { Content, FunctionCall, Part } from "@google/genai";
 import type { Account, Category } from "@/lib/data/types";
 import type { Source } from "./aggregate";
-import { AI_CONFIG, AI_MODEL, gemini, jsonSchema, usageOf, type Usage } from "./client";
+import { AI_CONFIG, gemini, jsonSchema, usageOf, withFallbackModel, type Usage } from "./client";
 import { financeTools, type FinanceTool } from "./tools";
 
 export type Answer = { text: string; sources: Source[] };
@@ -32,9 +32,17 @@ async function runTool(tools: FinanceTool[], call: FunctionCall): Promise<string
   return tool.run(input.data as never);
 }
 
-export async function answerQuestion(
+type QuestionContext = { today: string; accounts: Account[]; categories: Category[] };
+
+export function answerQuestion(question: string, context: QuestionContext): Promise<{ answer: Answer; usage: Usage }> {
+  // A conversation stays on one model: thought signatures belong to the model that wrote them.
+  return withFallbackModel((model) => converse(model, question, context));
+}
+
+async function converse(
+  model: string,
   question: string,
-  context: { today: string; accounts: Account[]; categories: Category[] },
+  context: QuestionContext,
 ): Promise<{ answer: Answer; usage: Usage }> {
   const sources: Source[] = [];
   const tools = financeTools({ ...context, sources });
@@ -51,7 +59,7 @@ export async function answerQuestion(
 
   for (let turn = 0; turn < MAX_TURNS; turn++) {
     const response = await gemini().models.generateContent({
-      model: AI_MODEL,
+      model,
       contents,
       config: { ...AI_CONFIG, systemInstruction: SYSTEM_PROMPT, tools: [{ functionDeclarations: declarations }] },
     });

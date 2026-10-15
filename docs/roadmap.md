@@ -62,7 +62,7 @@ notificações de fatura, orçamento e metas.
 - [x] Cada resposta mostra de onde veio o número (link para os lançamentos filtrados)
 - [x] IA (Gemini, plano gratuito) só no servidor; limite de uso por usuário e cache do resumo mensal
 - [x] Conta demo só com perguntas prontas, guardadas por dia (custo limitado)
-- [ ] Criar a chave grátis do Gemini (Google AI Studio) e colocar no `.env.local` e na Vercel
+- [x] Criar a chave grátis do Gemini (Google AI Studio) e colocar no `.env.local` e na Vercel
 - [ ] Personalidade da Clara (nome, tom, ícone e textos)
 
 ### Fase 13 — App no celular (PWA) — objetivo final

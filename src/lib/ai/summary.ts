@@ -10,7 +10,7 @@ import { GOAL_STATUS_LABELS } from "@/lib/goals";
 import { createClient } from "@/lib/supabase/server";
 import { transactionsHref } from "@/lib/transaction-filters";
 import { aggregate, findByName, type AiRow } from "./aggregate";
-import { AI_CONFIG, AI_MODEL, gemini, jsonSchema, usageOf, type Usage } from "./client";
+import { AI_CONFIG, gemini, jsonSchema, usageOf, withFallbackModel, type Usage } from "./client";
 
 export type SummaryInsight = { text: string; href: string | null };
 export type MonthSummary = { month: string; headline: string; insights: SummaryInsight[]; generatedAt: string };
@@ -104,8 +104,9 @@ export async function summarizeMonth(
 ): Promise<{ summary: MonthSummary; usage: Usage }> {
   const facts = await monthFacts(month, today, lookups);
 
-  const response = await gemini().models.generateContent({
-    model: AI_MODEL,
+  const response = await withFallbackModel((model) =>
+    gemini().models.generateContent({
+    model,
     contents: [{ role: "user", parts: [{ text: `Dados do mês (JSON):
 ${JSON.stringify(facts)}` }] }],
     config: {
@@ -114,7 +115,8 @@ ${JSON.stringify(facts)}` }] }],
       responseMimeType: "application/json",
       responseJsonSchema: jsonSchema(SummarySchema),
     },
-  });
+  }),
+  );
 
   const parsed = SummarySchema.safeParse(safeJson(response.text));
   if (!parsed.success) throw new Error(`Summary not parsed: ${parsed.error.issues[0]?.message}`);

@@ -5,7 +5,7 @@ vi.mock("server-only", () => ({}));
 
 const generateContent = vi.fn();
 vi.mock("./client", () => ({
-  AI_MODEL: "test-model",
+  withFallbackModel: (request: (model: string) => unknown) => request("test-model"),
   AI_CONFIG: {},
   gemini: () => ({ models: { generateContent } }),
   jsonSchema: () => ({}),
