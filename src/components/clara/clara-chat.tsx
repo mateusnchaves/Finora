@@ -122,15 +122,14 @@ export function ClaraChat({ isDemo }: { isDemo: boolean }) {
         type="button"
         onClick={open}
         aria-label="Conversar com a Clara, assistente financeira"
+        title="Clara"
         className={cn(
-          "fixed right-4 z-30 flex items-center gap-2 rounded-pill shadow-card",
+          "fixed right-4 z-30 rounded-pill shadow-card transition-transform hover:scale-105",
           "bottom-[calc(5rem+env(safe-area-inset-bottom))] lg:right-8 lg:bottom-8",
-          "lg:border lg:border-border lg:bg-surface-raised lg:p-1.5 lg:pr-4 lg:hover:bg-brand-tint",
           "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus",
         )}
       >
-        <ClaraAvatar size={52} />
-        <span className="hidden text-body font-semibold text-ink lg:inline">Clara</span>
+        <ClaraAvatar size={56} />
       </button>
 
       <dialog
