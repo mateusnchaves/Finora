@@ -4,15 +4,18 @@ import { monthOf, shiftMonth, todayISO } from "../src/lib/dates";
 test("goal: create, save, withdraw within limits, finish and delete", async ({ page }) => {
   // A deadline about five months away.
   const deadline = `${shiftMonth(monthOf(todayISO()), 5)}-28`;
+  // Unique per attempt, so a retry is not confused by the goal a failed attempt left behind.
+  const name = `Bicicleta ${Date.now()}`;
+  const link = new RegExp(name);
 
   await page.goto("/goals/new");
-  await page.getByLabel("Nome").fill("Bicicleta E2E");
+  await page.getByLabel("Nome").fill(name);
   await page.getByText("Carro", { exact: true }).click();
   await page.getByLabel("Quanto quer juntar").fill("1.000,00");
   await page.getByLabel("Até quando (opcional)").fill(deadline);
   await page.getByRole("button", { name: "Criar meta" }).click();
 
-  await expect(page.getByRole("heading", { name: "Bicicleta E2E" })).toBeVisible();
+  await expect(page.getByRole("heading", { name })).toBeVisible();
   await expect(page.getByText(/Guarde R\$ \d/)).toBeVisible();
 
   // Save R$ 400.
@@ -44,15 +47,15 @@ test("goal: create, save, withdraw within limits, finish and delete", async ({ p
 
   // The list shows it; the dashboard leaves finished goals out.
   await page.goto("/goals");
-  await expect(page.getByRole("link", { name: /Bicicleta E2E/ })).toContainText("R$ 1.000,00 de R$ 1.000,00");
+  await expect(page.getByRole("link", { name: link })).toContainText("R$ 1.000,00 de R$ 1.000,00");
 
-  await page.getByRole("link", { name: /Bicicleta E2E/ }).click();
+  await page.getByRole("link", { name: link }).click();
   await page.getByRole("link", { name: "Editar meta" }).click();
   await expect(page.getByRole("heading", { name: "Editar meta" })).toBeVisible();
   await page.getByRole("button", { name: "Excluir", exact: true }).click();
   await page.getByRole("button", { name: "Confirmar exclusão" }).click();
   await expect(page).toHaveURL(/\/goals$/);
-  await expect(page.getByRole("link", { name: /Bicicleta E2E/ })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: link })).toHaveCount(0);
 });
 
 test("a new goal cannot have a past deadline", async ({ page }) => {
