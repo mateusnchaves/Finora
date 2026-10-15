@@ -21,9 +21,16 @@ export const metadata: Metadata = {
     template: "%s · Finora",
   },
   description: "Seu dinheiro, com clareza.",
+  applicationName: "Finora",
+  // Installed on iOS: full screen, status bar over the navy header area.
+  appleWebApp: { capable: true, title: "Finora", statusBarStyle: "black-translucent" },
+  icons: { apple: "/icons/apple-touch-icon.png" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
+  // Lets the app draw under the iPhone notch; headers pad themselves with safe-area insets.
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#e8e2d4" },
     { media: "(prefers-color-scheme: dark)", color: "#0a1626" },

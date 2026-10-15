@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
 import { ClaraEntry } from "@/components/clara/clara-entry";
+import { SignedInServiceWorker } from "@/components/pwa/signed-in-service-worker";
 import {
   BottomNav,
   LiveBottomNav,
@@ -42,7 +43,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-surface/90 px-4 py-2 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-surface/90 px-4 pt-[calc(0.5rem+env(safe-area-inset-top))] pb-2 backdrop-blur lg:hidden">
         <Link href="/dashboard" aria-label="Finora, ir para a visão geral">
           <Logo size={32} />
         </Link>
@@ -62,6 +63,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <Suspense fallback={null}>
         <ClaraEntry />
+        <SignedInServiceWorker />
       </Suspense>
     </div>
   );

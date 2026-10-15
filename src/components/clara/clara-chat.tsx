@@ -143,7 +143,7 @@ export function ClaraChat({ isDemo }: { isDemo: boolean }) {
         )}
       >
         <div className="flex h-full flex-col">
-          <header className="flex items-center gap-3 border-b border-border px-4 py-3">
+          <header className="flex items-center gap-3 border-b border-border px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-3 sm:pt-3">
             <ClaraAvatar />
             <div className="min-w-0 flex-1">
               <h2 id="clara-title" className="font-display text-heading-md text-ink">

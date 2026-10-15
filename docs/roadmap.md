@@ -68,14 +68,14 @@ notificações de fatura, orçamento e metas.
 ### Fase 13 — App no celular (PWA) — objetivo final
 - [ ] Antes de começar: trocar a secret key e a senha do banco do Supabase (e o token da brapi),
       atualizar `.env.local` e a Vercel, fazer redeploy e apagar as chaves antigas
-- [ ] Antes de começar: desligar "Confirm email" no Supabase (o e-mail grátis tem limite de poucos
+- [x] Antes de começar: desligar "Confirm email" no Supabase (o e-mail grátis tem limite de poucos
       envios por hora; Resend só envia para qualquer pessoa com domínio próprio)
-- [ ] Manifest com nome, ícones e cores do Alvorada; instalável no Android e no iPhone
-- [ ] Service worker: telas abrem sem internet com os últimos dados vistos
+- [x] Manifest com nome, ícones e cores do Alvorada; instalável no Android e no iPhone
+- [x] Service worker: telas abrem sem internet com os últimos dados vistos (cache apagado ao trocar de usuário ou sair)
 - [ ] Lançamento rápido offline, enviado quando a conexão voltar
-- [ ] Atalhos no ícone do app: "Novo lançamento", "Fatura", "Metas"
+- [x] Atalhos no ícone do app: "Novo lançamento", "Fatura", "Metas"
 - [ ] Notificações push: fatura vencendo, orçamento estourado, meta atingida
-- [ ] Layout revisado para tela cheia (área segura do iPhone, barra inferior)
+- [x] Layout revisado para tela cheia (área segura do iPhone, barra inferior)
 - [ ] Lighthouse PWA e desempenho no README
 
 ## 3. Depois do PWA (ideias)

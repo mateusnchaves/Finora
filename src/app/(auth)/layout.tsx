@@ -1,5 +1,6 @@
 import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { ServiceWorker } from "@/components/pwa/service-worker";
 
 /*
  * Split screen: a blu notte brand panel (desktop only) and the form.
@@ -29,12 +30,14 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
         </svg>
       </aside>
 
-      <div className="flex min-h-dvh flex-col px-4 py-6 lg:px-16">
+      <div className="flex min-h-dvh flex-col px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-6 lg:px-16">
         <div className="flex items-center justify-between lg:justify-end">
           <Logo size={32} className="lg:hidden" />
           <ThemeToggle />
         </div>
         <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">{children}</main>
+        {/* Nobody is signed in here: wipe any pages a previous user left in the offline cache. */}
+        <ServiceWorker userId={null} />
       </div>
     </div>
   );
