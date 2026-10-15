@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
+import { clearQueue } from "@/lib/offline-queue";
 
 /** Whose pages the offline cache holds. Kept in localStorage, cleared with the cache. */
 const OWNER_KEY = "finora-cache-owner";
 
+/** Removes everything a previous user left on the device: cached pages and unsent entries. */
 function clearCachedPages() {
   navigator.serviceWorker?.controller?.postMessage({ type: "clear-data" });
+  clearQueue();
 }
 
 /**

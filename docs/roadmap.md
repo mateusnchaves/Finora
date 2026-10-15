@@ -72,7 +72,7 @@ notificações de fatura, orçamento e metas.
       envios por hora; Resend só envia para qualquer pessoa com domínio próprio)
 - [x] Manifest com nome, ícones e cores do Alvorada; instalável no Android e no iPhone
 - [x] Service worker: telas abrem sem internet com os últimos dados vistos (cache apagado ao trocar de usuário ou sair)
-- [ ] Lançamento rápido offline, enviado quando a conexão voltar
+- [x] Lançamento rápido offline, enviado quando a conexão voltar
 - [x] Atalhos no ícone do app: "Novo lançamento", "Fatura", "Metas"
 - [ ] Notificações push: fatura vencendo, orçamento estourado, meta atingida
 - [x] Layout revisado para tela cheia (área segura do iPhone, barra inferior)

@@ -7,7 +7,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { installmentDate, MAX_INSTALLMENTS, splitInstallments } from "@/lib/credit-card";
 import { isISODate, monthOf } from "@/lib/dates";
 import { parseMoney } from "@/lib/format";
-import { emptyToUndefined, failed, fieldErrorsFrom, formValues, type FormState } from "@/lib/forms";
+import { emptyToUndefined, failed, fieldErrorsFrom, formValues, initialFormState, type FormState } from "@/lib/forms";
 import type { Database } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 
@@ -66,8 +66,34 @@ function revalidateFinanceViews() {
   revalidatePath("/dashboard");
 }
 
+/** Outcome of a save: the month to show on success, or what went wrong. */
+type SaveResult = FormState & { month?: string };
+
 export async function saveTransaction(state: FormState, formData: FormData): Promise<FormState> {
-  const values = formValues(formData);
+  const result = await persistTransaction(state, formValues(formData));
+  if (!result.month) return result;
+  revalidateFinanceViews();
+  redirect(`/transactions?month=${result.month}`);
+}
+
+/**
+ * Sends a transaction recorded without internet (see src/lib/offline-queue.ts). Same rules
+ * as the form; offline entries are always new, never edits.
+ */
+export async function syncOfflineTransaction(input: unknown): Promise<{ ok: boolean; error?: string }> {
+  const values = z.record(z.string(), z.string().max(1000)).safeParse(input);
+  if (!values.success) return { ok: false, error: "Lançamento inválido." };
+  const fields = { ...values.data };
+  delete fields.id;
+  const result = await persistTransaction(initialFormState, fields);
+  if (result.month) {
+    revalidateFinanceViews();
+    return { ok: true };
+  }
+  return { ok: false, error: result.error ?? Object.values(result.fieldErrors ?? {})[0] ?? "Lançamento inválido." };
+}
+
+async function persistTransaction(state: FormState, values: Record<string, string>): Promise<SaveResult> {
   const parsed = transactionSchema.safeParse(values);
   if (!parsed.success) {
     return failed(state, values, { fieldErrors: fieldErrorsFrom(parsed.error) });
@@ -153,8 +179,7 @@ export async function saveTransaction(state: FormState, formData: FormData): Pro
   // Fill in any months already due after the first one (a past start date).
   if (recurringRuleId) await supabase.rpc("generate_my_recurring", { p_rule_id: recurringRuleId });
 
-  revalidateFinanceViews();
-  redirect(`/transactions?month=${monthOf(data.date)}`);
+  return { month: monthOf(data.date) };
 }
 
 type ParsedTransaction = z.infer<typeof transactionSchema>;
@@ -164,7 +189,7 @@ async function saveInstallments(
   state: FormState,
   values: Record<string, string>,
   data: ParsedTransaction & { userId: string; row: Omit<TransactionInsert, "user_id"> },
-): Promise<FormState> {
+): Promise<SaveResult> {
   const supabase = await createClient();
   if (data.type !== "expense") {
     return failed(state, values, { fieldErrors: { installments: "Só despesas podem ser parceladas." } });
@@ -192,8 +217,7 @@ async function saveInstallments(
   const { error } = await supabase.from("transactions").insert(rows);
   if (error) return failed(state, values, { error: "Não foi possível salvar agora. Tente de novo em instantes." });
 
-  revalidateFinanceViews();
-  redirect(`/transactions?month=${monthOf(data.date)}`);
+  return { month: monthOf(data.date) };
 }
 
 /** Deletes every installment of a purchase. */

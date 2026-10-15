@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
 import { ClaraEntry } from "@/components/clara/clara-entry";
+import { OfflineSync } from "@/components/pwa/offline-sync";
 import { SignedInServiceWorker } from "@/components/pwa/signed-in-service-worker";
 import {
   BottomNav,
@@ -65,6 +66,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <ClaraEntry />
         <SignedInServiceWorker />
       </Suspense>
+      <OfflineSync />
     </div>
   );
 }

@@ -10,7 +10,8 @@ import { cn } from "@/lib/cn";
 import { MAX_INSTALLMENTS } from "@/lib/credit-card";
 import type { Account, Category, TransactionItem, TransactionType } from "@/lib/data/types";
 import { TRANSACTION_TYPE_LABELS } from "@/lib/data/types";
-import { formatMoneyInput } from "@/lib/format";
+import { formatMoneyInput, parseMoney } from "@/lib/format";
+import { addToQueue, formFields } from "@/lib/offline-queue";
 import { initialFormState } from "@/lib/forms";
 
 const TYPES: TransactionType[] = ["expense", "income", "transfer"];
@@ -63,9 +64,36 @@ export function TransactionForm({ accounts, categories, transaction, defaultDate
   const [state, action, pending] = useActionState(saveTransaction, initialFormState);
   const values = { ...initialValues(transaction, accounts, defaultDate, defaults), ...state.values };
   const errors = state.fieldErrors ?? {};
+  // Counts entries saved on the device while offline; also remounts (clears) the form.
+  const [queued, setQueued] = useState(0);
+
+  // Without internet a new entry waits on the device; OfflineSync sends it later.
+  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    if (transaction || navigator.onLine) return;
+    event.preventDefault();
+    const fields = formFields(event.currentTarget);
+    if (!parseMoney(fields.amount ?? "") || !fields.description?.trim()) return;
+    addToQueue(fields);
+    setQueued((n) => n + 1);
+  }
+
   // Keyed by attempt so a failed submit remounts the form with what the user typed.
   return (
-    <form key={state.attempt ?? 0} action={action} className="flex flex-col gap-5" noValidate>
+    <form
+      key={`${state.attempt ?? 0}-${queued}`}
+      action={action}
+      onSubmit={onSubmit}
+      className="flex flex-col gap-5"
+      noValidate
+    >
+      {queued > 0 && (
+        <p role="status" className="flex items-start gap-2 rounded-md bg-brand-tint px-3.5 py-3 text-body-sm text-ink">
+          <Icon name="cloud_off" size={18} className="mt-px shrink-0 text-brand" />
+          {queued === 1
+            ? "Você está sem internet. O lançamento ficou guardado no aparelho e será enviado assim que a conexão voltar."
+            : `Você está sem internet. ${queued} lançamentos ficaram guardados no aparelho e serão enviados assim que a conexão voltar.`}
+        </p>
+      )}
       <FormFields
         accounts={accounts}
         categories={categories}
