@@ -63,7 +63,7 @@ notificações de fatura, orçamento e metas.
 - [x] IA (Gemini, plano gratuito) só no servidor; limite de uso por usuário e cache do resumo mensal
 - [x] Conta demo só com perguntas prontas, guardadas por dia (custo limitado)
 - [x] Criar a chave grátis do Gemini (Google AI Studio) e colocar no `.env.local` e na Vercel
-- [ ] Personalidade da Clara (nome, tom, ícone e textos)
+- [x] Personalidade da Clara (nome, tom, ícone e textos), botão flutuante em todas as páginas e conversa com memória
 
 ### Fase 13 — App no celular (PWA) — objetivo final
 - [ ] Antes de começar: trocar a secret key e a senha do banco do Supabase (e o token da brapi),

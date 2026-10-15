@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { Logo } from "@/components/brand/logo";
+import { ClaraEntry } from "@/components/clara/clara-entry";
 import {
   BottomNav,
   LiveBottomNav,
@@ -57,6 +58,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <Suspense fallback={<BottomNav pathname="" />}>
         <LiveBottomNav />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <ClaraEntry />
       </Suspense>
     </div>
   );

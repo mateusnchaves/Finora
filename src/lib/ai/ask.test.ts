@@ -72,4 +72,15 @@ describe("answerQuestion", () => {
     expect(generateContent).toHaveBeenCalledTimes(6);
     expect(answer.text).toMatch(/ampla demais/);
   });
+
+  it("sends earlier turns before the new message", async () => {
+    generateContent.mockResolvedValueOnce({ functionCalls: undefined, text: "Em setembro foram R$ 120,00." });
+    await answerQuestion("E em setembro?", context, [
+      { role: "user", text: "Quanto gastei com Uber?" },
+      { role: "clara", text: "R$ 80,00 em outubro." },
+    ]);
+    const contents = generateContent.mock.calls[0][0].contents;
+    expect(contents.map((c: { role: string }) => c.role)).toEqual(["user", "model", "user"]);
+    expect(contents[2].parts[0].text).toContain("E em setembro?");
+  });
 });

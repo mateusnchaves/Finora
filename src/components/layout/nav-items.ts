@@ -5,8 +5,6 @@ export type NavItem = {
   label: string;
   shortLabel: string;
   icon: IconName;
-  /** Left out of the phone tab bar, which fits six items. */
-  desktopOnly?: boolean;
 };
 
 export const NAV_ITEMS: NavItem[] = [
@@ -16,7 +14,6 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/budgets", label: "Orçamentos", shortLabel: "Orçamento", icon: "donut_large" },
   { href: "/goals", label: "Metas", shortLabel: "Metas", icon: "flag" },
   { href: "/investments", label: "Investimentos", shortLabel: "Investir", icon: "trending_up" },
-  { href: "/insights", label: "Assistente", shortLabel: "Assistente", icon: "auto_awesome", desktopOnly: true },
 ];
 
 export const SETTINGS_ITEM: NavItem = {

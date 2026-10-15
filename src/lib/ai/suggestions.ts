@@ -1,3 +1,7 @@
+/** First message in every conversation with Clara. */
+export const CLARA_GREETING =
+  "Oi, eu sou a Clara. Posso olhar seus gastos, orçamentos, faturas e metas e responder o que você quiser saber sobre o seu dinheiro.";
+
 /**
  * Ready-made questions. Their answers are cached per user per day, so clicking one again
  * costs nothing, and they are the only questions the shared demo account can ask.

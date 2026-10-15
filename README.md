@@ -38,10 +38,11 @@ every night.
 - Bank statement import (OFX and CSV) with category suggestions learned from your own history,
   duplicate detection and one-click undo.
 
-**Assistente (AI)**
-- Monthly summary written from the month's numbers, with links to the transactions behind each point.
-- Questions in Portuguese ("quanto gastei com Uber em agosto?") answered by Gemini through read-only
-  tools, each answer listing where its numbers came from.
+**Clara, the AI assistant**
+- A floating button on every page opens a chat with Clara, who answers questions in Portuguese
+  ("quanto gastei com Uber em agosto?", "e em setembro?") through read-only tools, each answer
+  listing where its numbers came from. The conversation keeps context and survives navigation.
+- Monthly summary on request, with links to the transactions behind each point.
 
 **Investments**
 - Stocks, FIIs, ETFs, US stocks and crypto with quotes from brapi.dev, CoinGecko and AwesomeAPI.
@@ -175,7 +176,11 @@ The pace is linear (`src/lib/goals.ts`): halfway to the deadline, half the targe
 saved. More than 10% under that line is "atrasada"; the monthly amount spreads what is left over
 the calendar months until the deadline, counting the current one.
 
-### Assistente (AI)
+### Clara (AI assistant)
+
+Clara's personality (natural, analytical, frank without judging, light humor, honest about limits)
+lives in `src/lib/ai/clara.ts`, above the rules the app depends on. The chat panel keeps the
+conversation in `sessionStorage` and sends the last 12 turns as context with each message.
 
 The assistant runs on the server with the Google Gen AI SDK (`gemini-3.8-flash` on the free tier,
 low thinking; `GEMINI_MODEL` swaps it). Overload errors are retried after 1, 2 and 4 seconds, then the

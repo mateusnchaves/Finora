@@ -59,7 +59,7 @@ export function BottomNav({ pathname }: PathProps) {
       className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface-raised pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
       <ul className="mx-auto grid max-w-[720px] grid-cols-6">
-        {NAV_ITEMS.filter((item) => !item.desktopOnly).map((item) => {
+        {NAV_ITEMS.map((item) => {
           const active = isActive(pathname, item.href);
           return (
             <li key={item.href}>

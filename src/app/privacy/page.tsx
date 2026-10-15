@@ -41,9 +41,9 @@ export default function PrivacyPage() {
             hospedado na Vercel.
           </li>
           <li>
-            Quando você usa o Assistente, os números e as descrições dos seus lançamentos necessários para a resposta
+            Quando você conversa com a Clara, a assistente do app, os números e as descrições dos seus lançamentos necessários para a resposta
             são enviados ao Google, que fornece a IA (Gemini) pelo plano gratuito. Nesse plano, o Google pode usar o
-            conteúdo enviado para melhorar os produtos dele. Nada é enviado se você não usar o Assistente.
+            conteúdo enviado para melhorar os produtos dele. Nada é enviado se você não usar a Clara.
           </li>
           <li>
             Para buscar cotações, o app envia aos provedores (brapi, CoinGecko, AwesomeAPI e Banco Central) apenas o
