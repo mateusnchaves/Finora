@@ -6,8 +6,15 @@ import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UserMenu, UserMenuSkeleton } from "@/components/layout/user-menu";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
+import { NotificationSettings } from "@/components/pwa/notification-settings";
+import { getCurrentUser } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Configurações" };
+
+async function Notifications() {
+  const user = await getCurrentUser();
+  return <NotificationSettings isDemo={user.isDemo} />;
+}
 
 export default function SettingsPage() {
   return (
@@ -34,6 +41,12 @@ export default function SettingsPage() {
             </span>
             <Icon name="chevron_right" className="text-ink-muted" />
           </Link>
+        </Card>
+        <Card>
+          <CardTitle className="mb-2">Notificações</CardTitle>
+          <Suspense fallback={<p className="text-body-sm text-ink-muted">Carregando…</p>}>
+            <Notifications />
+          </Suspense>
         </Card>
         <Card>
           <CardTitle>Aparência</CardTitle>

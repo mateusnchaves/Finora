@@ -6,8 +6,8 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Skip static assets, image files and the PWA files (service worker, manifest, icons).
+  // Skip static assets, image files, robots.txt and the PWA files (service worker, manifest, icons).
   matcher: [
-    "/((?!_next/static|_next/image|icon.svg|brand/|icons/|sw.js|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|icon.svg|brand/|icons/|sw.js|manifest.webmanifest|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

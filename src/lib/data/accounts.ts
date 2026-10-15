@@ -3,10 +3,10 @@ import { getCurrentUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Account } from "./types";
 
-const ACCOUNT_COLUMNS =
+export const ACCOUNT_COLUMNS =
   "id, name, type, initial_balance, balance, archived, transaction_count, closing_day, due_day, credit_limit";
 
-type AccountRow = {
+export type AccountRow = {
   id: string | null;
   name: string | null;
   type: Account["type"] | null;
@@ -19,7 +19,7 @@ type AccountRow = {
   credit_limit: number | null;
 };
 
-function toAccount(row: AccountRow): Account {
+export function toAccount(row: AccountRow): Account {
   return {
     id: row.id!,
     name: row.name ?? "",

@@ -3,7 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "./database.types";
 
 /** Routes reachable without a session. Everything else requires login. */
-const PUBLIC_PATHS = ["/login", "/signup", "/auth", "/privacy", "/offline"];
+// /api/cron checks its own secret.
+const PUBLIC_PATHS = ["/login", "/signup", "/auth", "/privacy", "/offline", "/api/cron"];
 
 function isPublic(pathname: string) {
   return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));

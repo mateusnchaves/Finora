@@ -415,6 +415,31 @@ export type Database = {
         };
         Relationships: [];
       };
+      notification_log: {
+        Row: {
+          id: number;
+          kind: string;
+          ref: string;
+          sent_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          id?: never;
+          kind: string;
+          ref: string;
+          sent_at?: string;
+          user_id: string;
+        };
+        Update: {
+          id?: never;
+          kind?: string;
+          ref?: string;
+          sent_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           created_at: string;
@@ -434,6 +459,37 @@ export type Database = {
           id?: string;
           is_demo?: boolean;
           name?: string | null;
+        };
+        Relationships: [];
+      };
+      push_subscriptions: {
+        Row: {
+          auth: string;
+          created_at: string;
+          endpoint: string;
+          id: string;
+          p256dh: string;
+          user_agent: string | null;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          auth: string;
+          created_at?: string;
+          endpoint: string;
+          id?: string;
+          p256dh: string;
+          user_agent?: string | null;
+          user_id?: string;
+        };
+        Update: {
+          auth?: string;
+          created_at?: string;
+          endpoint?: string;
+          id?: string;
+          p256dh?: string;
+          user_agent?: string | null;
+          user_id?: string;
         };
         Relationships: [];
       };

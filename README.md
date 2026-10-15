@@ -50,6 +50,14 @@ every night.
 - Fixed income (CDB, LCI/LCA, Tesouro Selic, Prefixado, IPCA+) valued from Banco Central CDI,
   Selic and IPCA series, with the regressive income tax estimate.
 
+**Phone app (PWA)**
+- Installable on Android and iPhone, full screen, with shortcuts on the icon (new transaction,
+  bills, goals).
+- Pages already seen open offline with the last data; a transaction recorded offline is sent
+  when the connection returns.
+- Push notifications, at most once a day: bill due in three days, budget over its limit, goal
+  reached.
+
 **Quality**
 - Row Level Security on every table; privileged code isolated in a private schema.
 - 100+ unit tests on the money, date, import, position and fixed income math.
@@ -199,6 +207,25 @@ summaries are cached per day (`ai_results`), and the shared demo account can onl
 cost is bounded. Without `GEMINI_API_KEY` the page says the assistant is unavailable and the rest
 of the app is unaffected.
 
+### Phone app (PWA)
+
+- **Install**: `src/app/manifest.ts` (icons generated from the mark by `scripts/generate-icons.mjs`,
+  including maskable and Apple variants) and `viewportFit: "cover"` with safe-area padding.
+- **Offline**: `public/sw.js`, hand-written. Pages and RSC payloads are network-first with the
+  last copy as fallback (and `/offline` for pages never opened); hashed build assets are
+  cache-first. The cache belongs to one user: `ServiceWorker` wipes it on the sign-in screen and
+  when a different user signs in.
+- **Offline entries**: without internet the transaction form saves the entry to the device
+  (`src/lib/offline-queue.ts`); `OfflineSync` sends it through the same validation when the
+  connection returns, and lets the user discard anything the server refuses.
+- **Notifications**: Web Push with VAPID keys. Vercel Cron calls `/api/cron/notify` daily with
+  `CRON_SECRET`; the pure rules in `src/lib/notifications/alerts.ts` decide (bill due within
+  three days and unpaid, budget over, goal reached) and `notification_log` keeps each alert to
+  one send. `?dry=1` lists what would go out without sending.
+
+Lighthouse on the production build (login page, measured locally): accessibility 100, best
+practices 100, SEO 100, performance 91 on mobile.
+
 ### Error monitoring
 
 `src/instrumentation.ts` catches every server error (rendering, Server Actions, Route Handlers,
@@ -278,7 +305,9 @@ Open http://localhost:3000.
 4. For Google sign-in, create an OAuth client (Web application) in Google Cloud with the
    redirect URI `https://<project-ref>.supabase.co/auth/v1/callback`, then paste its client ID
    and secret in Supabase → Authentication → Sign In / Providers → Google.
-5. For the Assistente, add `GEMINI_API_KEY` (free, from aistudio.google.com). On the free tier Google
+5. For notifications, add `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` and
+   `CRON_SECRET`; `vercel.json` schedules the daily job.
+6. For the Assistente, add `GEMINI_API_KEY` (free, from aistudio.google.com). On the free tier Google
    may use the content to improve its products; the privacy page says so.
 
 ## Project structure

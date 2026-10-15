@@ -10,6 +10,8 @@ import {
   type CardSettings,
 } from "@/lib/credit-card";
 import { shiftMonth } from "@/lib/dates";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 import { nameLookups, toTransactionItem, TRANSACTION_COLUMNS } from "./transactions";
 import type { Account, Category, TransactionItem } from "./types";
@@ -42,11 +44,24 @@ export function cardSettings(card: Account): CardSettings | null {
 }
 
 export async function getCardBill(card: Account, dueMonth: string, today: string, lookups: Lookups): Promise<CardBill> {
+  await getCurrentUser();
+  return computeCardBill(await createClient(), card, dueMonth, today, lookups);
+}
+
+/**
+ * The bill math with any client: the signed-in user's (RLS) for pages, or the server's own
+ * for the daily notification job, which then passes empty lookups (names are not needed).
+ */
+export async function computeCardBill(
+  supabase: SupabaseClient<Database>,
+  card: Account,
+  dueMonth: string,
+  today: string,
+  lookups: Lookups,
+): Promise<CardBill> {
   const settings = cardSettings(card);
   if (!settings) throw new Error("Card has no closing and due days.");
 
-  await getCurrentUser();
-  const supabase = await createClient();
   const bill = billByDueMonth(dueMonth, settings);
   const window = paymentWindow(bill, settings);
 

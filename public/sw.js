@@ -4,8 +4,9 @@
  * - Build assets (/_next/static, hashed and immutable), icons and fonts: cache first.
  * - Server Actions, API calls and other hosts are never touched.
  * The page asks it to wipe the caches on sign-out, so no financial data stays behind.
+ * Push: shows the daily alerts (bill due, budget over, goal reached) and opens their page.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const PAGES = `finora-pages-${VERSION}`;
 const ASSETS = `finora-assets-${VERSION}`;
 const OFFLINE_URL = "/offline";
@@ -88,3 +89,34 @@ async function networkFirst(request, isPage) {
     return Response.error();
   }
 }
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data?.text() };
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Finora", {
+      body: data.body || "",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      lang: "pt-BR",
+      data: { url: data.url || "/dashboard" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL(event.notification.data?.url || "/dashboard", self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      // Reuse an open Finora window when there is one.
+      const open = windows.find((w) => new URL(w.url).origin === self.location.origin);
+      if (open) return open.navigate(target).then((w) => (w || open).focus());
+      return self.clients.openWindow(target);
+    }),
+  );
+});

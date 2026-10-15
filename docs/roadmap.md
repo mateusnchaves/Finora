@@ -74,9 +74,9 @@ notificações de fatura, orçamento e metas.
 - [x] Service worker: telas abrem sem internet com os últimos dados vistos (cache apagado ao trocar de usuário ou sair)
 - [x] Lançamento rápido offline, enviado quando a conexão voltar
 - [x] Atalhos no ícone do app: "Novo lançamento", "Fatura", "Metas"
-- [ ] Notificações push: fatura vencendo, orçamento estourado, meta atingida
+- [x] Notificações push: fatura vencendo, orçamento estourado, meta atingida (Web Push + Vercel Cron diário)
 - [x] Layout revisado para tela cheia (área segura do iPhone, barra inferior)
-- [ ] Lighthouse PWA e desempenho no README
+- [x] Lighthouse PWA e desempenho no README
 
 ## 3. Depois do PWA (ideias)
 - Open Finance (Pluggy): transações direto do banco; exige aprovação e cuidado com dados sensíveis
