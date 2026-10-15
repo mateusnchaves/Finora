@@ -13,9 +13,10 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  --surface: #f6f1e7;
-  --surface-raised: #fffdf8;
-  --brand-tint: #e6ecf5;
+  /* Linen and warm ivory instead of near-white: less glare, clearer cards. */
+  --surface: #e8e2d4;
+  --surface-raised: #f4f0e6;
+  --brand-tint: #dce1e7;
   --deep: #0b1f3a;
   --ink: #0b1f3a;
   --ink-muted: #4a5a73;
@@ -27,11 +28,29 @@
   --on-accent: #0b1f3a;
   --negative: #8e2430;
   --negative-tint: #f4dcdd;
-  --border: #ddd5c3;
+  --border: #d2c8b3;
   --border-strong: #7a869a;
   --focus: #1d4a87;
 
-  --shadow-card-value: 0 1px 2px rgba(11, 31, 58, 0.06), 0 12px 32px rgba(11, 31, 58, 0.08);
+  --shadow-card-value: 0 1px 2px rgba(11, 31, 58, 0.06), 0 6px 18px rgba(11, 31, 58, 0.07);
+}
+
+/* Light theme: the desktop sidebar is navy, like leather against paper. */
+[data-theme="light"] .sidebar-deep {
+  color-scheme: dark;
+
+  --surface: #0b1f3a;
+  --surface-raised: #0b1f3a;
+  --brand-tint: #173459;
+  --deep: #1d4075;
+  --ink: #f1ece0;
+  --ink-muted: #a9b6ca;
+  --brand: #8fb6ec;
+  --brand-hover: #b3cdf2;
+  --on-brand: #0b1f3a;
+  --border: #1d3555;
+  --border-strong: #6f819c;
+  --focus: #8fb6ec;
 }
 
 [data-theme="dark"] {

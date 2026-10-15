@@ -22,7 +22,7 @@ import { UserMenu, UserMenuSkeleton } from "./user-menu";
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[256px_1fr]">
-      <aside className="sticky top-0 hidden h-dvh flex-col border-r border-border bg-surface-raised px-4 py-6 lg:flex">
+      <aside className="sidebar-deep sticky top-0 hidden h-dvh flex-col border-r border-border bg-surface-raised px-4 py-6 lg:flex">
         <div className="mb-8 flex items-center justify-between pl-2">
           <Link href="/dashboard" aria-label="Finora, ir para a visão geral">
             <Logo size={36} />
