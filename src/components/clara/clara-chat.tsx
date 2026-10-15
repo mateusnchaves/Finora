@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { askClara, generateSummary } from "@/app/(app)/clara/actions";
@@ -38,15 +39,18 @@ function historyOf(messages: Message[]) {
     .map((m) => ({ role: m.role, text: m.text }));
 }
 
+/** Clara's portrait: the golden sunflower monogram. */
 export function ClaraAvatar({ size = 40 }: { size?: number }) {
   return (
-    <span
-      aria-hidden="true"
-      style={{ width: size, height: size }}
-      className="grid shrink-0 place-items-center rounded-pill bg-brand text-on-brand"
-    >
-      <Icon name="auto_awesome" size={Math.round(size * 0.55)} filled />
-    </span>
+    <Image
+      src="/brand/clara.webp"
+      alt=""
+      width={size}
+      height={size}
+      // Already exported at the sizes used, so skip the image optimizer.
+      unoptimized
+      className="shrink-0 rounded-pill"
+    />
   );
 }
 
@@ -119,15 +123,14 @@ export function ClaraChat({ isDemo }: { isDemo: boolean }) {
         onClick={open}
         aria-label="Conversar com a Clara, assistente financeira"
         className={cn(
-          "fixed right-4 z-30 flex items-center gap-2 rounded-pill bg-brand p-1.5 text-on-brand shadow-card",
-          "bottom-[calc(5rem+env(safe-area-inset-bottom))] lg:right-8 lg:bottom-8 lg:pr-4",
-          "hover:bg-brand-hover focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus",
+          "fixed right-4 z-30 flex items-center gap-2 rounded-pill shadow-card",
+          "bottom-[calc(5rem+env(safe-area-inset-bottom))] lg:right-8 lg:bottom-8",
+          "lg:border lg:border-border lg:bg-surface-raised lg:p-1.5 lg:pr-4 lg:hover:bg-brand-tint",
+          "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-focus",
         )}
       >
-        <span className="grid size-11 place-items-center">
-          <Icon name="auto_awesome" size={24} filled />
-        </span>
-        <span className="hidden text-body font-semibold lg:inline">Clara</span>
+        <ClaraAvatar size={52} />
+        <span className="hidden text-body font-semibold text-ink lg:inline">Clara</span>
       </button>
 
       <dialog
@@ -183,7 +186,7 @@ export function ClaraChat({ isDemo }: { isDemo: boolean }) {
               )}
               {pending && (
                 <p role="status" className="flex items-center gap-2 px-1 text-body-sm text-ink-muted">
-                  <Icon name="auto_awesome" size={16} className="text-brand" />
+                  <ClaraAvatar size={20} />
                   Clara está olhando seus lançamentos…
                 </p>
               )}
