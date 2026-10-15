@@ -14,10 +14,12 @@
 
 ---
 
-Finora shows where money comes in and, above all, where it goes out, then follows it into
-investments with live quotes. The interface is in Brazilian Portuguese; code and docs are in
-English. Try it with **"Entrar como demo"**: a sample account with six months of data that resets
-every night.
+Finora shows where money comes in and, above all, where it goes out: card bills, budgets,
+savings goals and investments with live quotes, plus Clara, an AI assistant that answers
+questions about your own numbers. It installs on the phone as an app and works offline. The
+interface is in Brazilian Portuguese; code and docs are in English. Try it at
+**[finora-wl7u.vercel.app](https://finora-wl7u.vercel.app)** with **"Entrar como demo"**: a sample
+account with six months of data that resets every night.
 
 ## Features
 
@@ -60,9 +62,11 @@ every night.
 
 **Quality**
 - Row Level Security on every table; privileged code isolated in a private schema.
-- 100+ unit tests on the money, date, import, position and fixed income math.
-- End-to-end tests (Playwright) for sign-in, the demo account and the transaction flow, run
-  against a throwaway user that is created and deleted on every run.
+- 150+ unit tests on the money, date, import, position, fixed income, card bill, goal, alert and
+  assistant logic.
+- 20 end-to-end tests (Playwright): sign-in, Google, the demo account, transactions, card bills
+  with installments and payment, goals, Clara's panel, and the offline mode (with the network
+  cut). They run against a throwaway user created and deleted on every run.
 - CI on every push: lint, type check, unit tests, build and end-to-end tests.
 - Error monitoring without a third-party service: server errors (`onRequestError`) and browser
   errors are stored in a private table for 30 days; `npm run errors` lists them.
@@ -74,12 +78,18 @@ every night.
   <img src="docs/screenshots/investments.jpg" width="45%" alt="Investments: allocation and positions with live quotes" />
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/card-bill.jpg" width="45%" alt="Credit card bill: total, due date, limit and purchases with installments" />
+  &nbsp;
+  <img src="docs/screenshots/clara.jpg" width="24%" alt="Clara, the AI assistant, answering how the savings goals are going" />
+</p>
+
 ## Tech stack
 
 - **Next.js 16** (App Router, Server Actions, Cache Components, Proxy) + **TypeScript**
 - **Tailwind CSS 4** with tokens from the Finora design system
 - **Supabase**: Postgres, Auth, Row Level Security, `pg_cron`
-- **Google Gen AI SDK** (Gemini, free tier) for the Assistente
+- **Google Gen AI SDK** (Gemini, free tier) for Clara; **Web Push** (VAPID) for notifications
 - **Zod** for form validation, **Vitest** and **Playwright** for tests, **GitHub Actions** for CI
 - Market data: [brapi.dev](https://brapi.dev), [CoinGecko](https://www.coingecko.com/),
   [AwesomeAPI](https://docs.awesomeapi.com.br/), [Banco Central SGS](https://dadosabertos.bcb.gov.br/)
@@ -89,10 +99,13 @@ every night.
 
 ```mermaid
 flowchart LR
-  Browser -->|Server Actions / RSC| Next["Next.js on Vercel"]
+  Browser["Browser / installed app<br/>(service worker)"] -->|Server Actions / RSC| Next["Next.js on Vercel"]
   Next -->|user session, RLS| Supabase[(Supabase Postgres)]
   Next -->|server only, cached| Quotes["brapi · CoinGecko · AwesomeAPI · BCB"]
-  Next -->|secret key, shared caches only| Supabase
+  Next -->|read-only tools, user's client| Gemini["Gemini (Clara)"]
+  Next -->|secret key: shared caches, daily alerts| Supabase
+  VCron["Vercel Cron"] -->|daily| Next
+  Next -->|Web Push| Browser
   Cron["pg_cron"] -->|daily| Supabase
 ```
 
@@ -103,8 +116,9 @@ flowchart LR
   run in Postgres as `security invoker` functions and views.
 - **Market data** is fetched only on the server and cached in shared tables (`quotes`,
   `index_rates`) that users can read and only the server writes.
-- **Jobs** run inside the database with `pg_cron`: recurring transactions at 03:00 and the demo
-  reset at 04:00 (São Paulo).
+- **Jobs**: `pg_cron` creates recurring transactions at 03:00 and resets the demo at 04:00
+  (São Paulo), and prunes old error events, AI results and notification logs. Vercel Cron calls
+  the notification job at 09:00.
 
 ## How the numbers work
 
@@ -191,10 +205,11 @@ lives in `src/lib/ai/clara.ts`, above the rules the app depends on. The chat pan
 conversation in `sessionStorage` and sends the last 12 turns as context with each message.
 
 The assistant runs on the server with the Google Gen AI SDK (`gemini-3.8-flash` on the free tier,
-low thinking; `GEMINI_MODEL` swaps it). Overload errors are retried after 1, 2 and 4 seconds, then the
-request runs once on `gemini-3.5-flash-lite`; a conversation stays on one model. The question loop is a plain function-calling loop
-(`src/lib/ai/ask.ts`, at most six turns), and tool input is validated with the same Zod schemas
-that are sent to the model as JSON Schema. Two read-only tools (`src/lib/ai/tools.ts`) are all it can use:
+low thinking; `GEMINI_MODEL` swaps it). Overload errors are retried after 1, 2 and 4 seconds, then
+the request runs once on `gemini-3.5-flash-lite`; a request stays on one model. The question loop
+is a plain function-calling loop (`src/lib/ai/ask.ts`, at most six turns), and tool input is
+validated with the same Zod schemas that are sent to the model as JSON Schema. Two read-only
+tools (`src/lib/ai/tools.ts`) are all it can use:
 `find_transactions` (sum, group and list transactions in a period, with type, category, account and
 text filters) and `get_context` (accounts, categories, budgets, goals, card bills). They query with
 the signed-in user's own Supabase client, so Row Level Security applies to the model exactly as to
@@ -204,8 +219,8 @@ output; its links are built by the app from the category name, never taken from 
 
 Limits: 20 questions and 5 summaries per user per day (`ai_requests`). Suggested questions and
 summaries are cached per day (`ai_results`), and the shared demo account can only use those, so its
-cost is bounded. Without `GEMINI_API_KEY` the page says the assistant is unavailable and the rest
-of the app is unaffected.
+cost is bounded. Without `GEMINI_API_KEY` Clara's button does not appear and the rest of the app
+is unaffected.
 
 ### Phone app (PWA)
 
@@ -248,7 +263,9 @@ because historical market prices are not stored. The chart's footnote says so.
 The visual identity ("Alvorada") pairs blu notte and ivory with a single touch of antique gold.
 Headings use **Bodoni Moda** (optical size 14), UI text uses **Instrument Sans**, and icons are
 **Material Symbols Rounded**. Tokens live in [`src/app/globals.css`](src/app/globals.css) and switch
-themes through `data-theme` on `<html>`, set before first paint.
+themes through `data-theme` on `<html>`, set before first paint. The light theme sets linen and
+warm ivory against a navy sidebar (the sidebar reuses the dark tokens in its own scope), so no
+large surface is near-white. Clara's portrait is a golden sunflower with a serif "C" on deep blue.
 
 Brand rules carried into the UI: income in blue with "+", expenses in ink with "−", never red for
 an ordinary expense or an investment loss; red only for real alerts (over budget, negative
@@ -266,8 +283,13 @@ deficiency separation and contrast in both themes, and every chart has a table v
 - Privileged code (seeds, new-user trigger, recurring generator, demo reset) lives in a `private`
   schema the public API cannot reach. Users cannot change their own `is_demo` flag or a rule's
   `generated_until`.
-- API tokens and the Supabase secret key stay on the server; the secret key is used only for the
-  shared quote and index caches.
+- API tokens and the Supabase secret key stay on the server. The secret key writes the shared
+  quote and index caches; the only place it reads users' rows is the daily notification job,
+  which has no signed-in user, is protected by `CRON_SECRET` and only reads.
+- Clara's tools query with the signed-in user's client, so the model sees exactly what the user
+  can see and cannot write anything.
+- The offline cache on the device belongs to one user and is wiped on the sign-in screen and when
+  a different user signs in.
 
 ## Getting started
 
@@ -275,7 +297,7 @@ Requirements: Node.js 20+ and a Supabase project.
 
 ```bash
 npm install
-cp .env.example .env.local   # fill in Supabase, brapi and demo values
+cp .env.example .env.local   # Supabase, brapi and demo values; Gemini and VAPID are optional
 npm run db:push              # create the schema
 npm run seed:demo            # create the demo account
 npm run dev
@@ -294,6 +316,7 @@ Open http://localhost:3000.
 | `npm run db:types` | Regenerate `src/lib/supabase/database.types.ts` |
 | `npm run seed:demo` | Create or reset the demo account |
 | `npm run errors` | Latest error events reported by production |
+| `node scripts/generate-icons.mjs` | Rebuild the app icons from the Finora mark |
 
 ### Deploying to Vercel
 
@@ -307,7 +330,7 @@ Open http://localhost:3000.
    and secret in Supabase → Authentication → Sign In / Providers → Google.
 5. For notifications, add `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` and
    `CRON_SECRET`; `vercel.json` schedules the daily job.
-6. For the Assistente, add `GEMINI_API_KEY` (free, from aistudio.google.com). On the free tier Google
+6. For Clara, add `GEMINI_API_KEY` (free, from aistudio.google.com). On the free tier Google
    may use the content to improve its products; the privacy page says so.
 
 ## Project structure
@@ -315,27 +338,39 @@ Open http://localhost:3000.
 ```
 src/
   app/
-    (app)/              # Signed-in area: dashboard, transactions, accounts, budgets, investments, settings
+    (app)/              # Signed-in area: dashboard, transactions, accounts, cards (bills),
+                        # budgets, goals, investments, settings, clara (assistant actions)
     (auth)/             # Login, sign-up and their Server Actions
-    auth/callback/      # Google sign-in and email confirmation handler
+    api/cron/notify/    # Daily push notification job (Vercel Cron)
+    auth/               # Google sign-in and email confirmation handlers
+    offline/, privacy/  # Offline fallback and privacy policy
+    manifest.ts         # Installable app (PWA)
     samples/            # Generated sample OFX/CSV files
-  components/           # brand, finance, investments, layout, ui
+  components/           # brand, clara, finance, investments, layout, pwa, ui
   lib/
+    ai/                 # Clara: persona, tools, question loop, monthly summary, limits
     data/               # Server-only data access layer
     fixed-income/       # SGS series cache and valuation
     import/             # OFX/CSV parsers, categorization, duplicate detection
     investments/        # Positions, quotes, providers, number formatting
+    notifications/      # Alert rules and Web Push sending
     supabase/           # Server, proxy and admin clients, generated types
+    credit-card.ts      # Bill periods, installments, status
+    goals.ts            # Goal pace and status
+    offline-queue.ts    # Transactions recorded offline
+  instrumentation.ts    # Server error reporting
   proxy.ts              # Session refresh + optimistic auth redirects
+public/sw.js            # Service worker (offline pages, push)
 e2e/                    # Playwright tests
 supabase/migrations/    # Schema, RLS, functions, cron jobs, demo seeds
-scripts/                # db:push, db:types, seed:demo
-docs/                   # MVP plan (Portuguese) and screenshots
+scripts/                # db:push, db:types, seed:demo, errors, generate-icons
+docs/                   # MVP plan and roadmap (Portuguese), screenshots
 ```
 
 ## Roadmap
 
-All eight MVP phases are done (plan in [docs/mvp-plan.md](docs/mvp-plan.md)). Next, in order
-([docs/roadmap.md](docs/roadmap.md)): production hardening (custom email, Google sign-in,
-end-to-end tests), credit card bills with installments, savings goals, AI insights on spending,
-and finally an installable mobile app (PWA) with offline mode and notifications.
+All 13 phases are done: the eight of the MVP ([docs/mvp-plan.md](docs/mvp-plan.md)) and five
+more ([docs/roadmap.md](docs/roadmap.md)): production hardening (Google sign-in, end-to-end tests,
+error monitoring), credit card bills with installments, savings goals, the Clara assistant, and
+the installable phone app with offline mode and notifications. Ideas for later: Open Finance
+(Pluggy), month-end net worth at market prices, Tesouro Direto prices and a monthly PDF report.
