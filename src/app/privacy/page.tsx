@@ -42,8 +42,8 @@ export default function PrivacyPage() {
           </li>
           <li>
             Quando você usa o Assistente, os números e as descrições dos seus lançamentos necessários para a resposta
-            são enviados à Anthropic, que fornece a IA (Claude). Eles servem só para gerar a resposta. Nada é enviado
-            se você não usar o Assistente.
+            são enviados ao Google, que fornece a IA (Gemini) pelo plano gratuito. Nesse plano, o Google pode usar o
+            conteúdo enviado para melhorar os produtos dele. Nada é enviado se você não usar o Assistente.
           </li>
           <li>
             Para buscar cotações, o app envia aos provedores (brapi, CoinGecko, AwesomeAPI e Banco Central) apenas o

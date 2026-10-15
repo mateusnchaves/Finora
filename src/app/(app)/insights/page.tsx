@@ -67,7 +67,7 @@ async function InsightsContent({ searchParams }: { searchParams: PageProps<"/ins
       </Card>
 
       <p className="text-body-sm text-ink-muted">
-        As respostas são escritas por IA (Claude, da Anthropic) a partir dos seus lançamentos, que são
+        As respostas são escritas por IA (Gemini, do Google) a partir dos seus lançamentos, que são
         lidos só quando você pergunta. A IA só consulta seus dados, nunca altera nada. Confira os números pelos links. Veja
         a{" "}
         <Link href="/privacy" className="font-semibold text-brand underline-offset-4 hover:underline">

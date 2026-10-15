@@ -1,13 +1,15 @@
 import "server-only";
-import type Anthropic from "@anthropic-ai/sdk";
+import type { Content, FunctionCall, Part } from "@google/genai";
 import type { Account, Category } from "@/lib/data/types";
 import type { Source } from "./aggregate";
-import { AI_REQUEST, anthropic, usageOf, type Usage } from "./client";
-import { financeTools } from "./tools";
+import { AI_CONFIG, AI_MODEL, gemini, jsonSchema, usageOf, type Usage } from "./client";
+import { financeTools, type FinanceTool } from "./tools";
 
 export type Answer = { text: string; sources: Source[] };
 
-// Stable across requests (no dates, no user data), so it can be cached with the tools.
+/** Model turns per question: a lookup or two, sometimes a comparison, then the answer. */
+const MAX_TURNS = 6;
+
 const SYSTEM_PROMPT = `Você é o assistente do Finora, um app de finanças pessoais. Responde perguntas do usuário sobre o próprio dinheiro dele, usando só os dados que as ferramentas retornam.
 
 Como responder:
@@ -21,44 +23,62 @@ Como responder:
 - Se a pergunta não for sobre as finanças do usuário no Finora, diga que você só responde sobre os dados dele aqui.
 - Não dê recomendação de investimento personalizada; pode descrever o que os números mostram.`;
 
+/** Runs one tool call; bad input goes back to the model as an error it can fix. */
+async function runTool(tools: FinanceTool[], call: FunctionCall): Promise<string> {
+  const tool = tools.find((t) => t.name === call.name);
+  if (!tool) return `Erro: a ferramenta ${call.name} não existe.`;
+  const input = tool.inputSchema.safeParse(call.args ?? {});
+  if (!input.success) return `Erro nos parâmetros: ${input.error.issues.map((i) => i.message).join("; ")}`;
+  return tool.run(input.data as never);
+}
+
 export async function answerQuestion(
   question: string,
   context: { today: string; accounts: Account[]; categories: Category[] },
 ): Promise<{ answer: Answer; usage: Usage }> {
   const sources: Source[] = [];
-  const runner = anthropic().beta.messages.toolRunner({
-    ...AI_REQUEST,
-    max_iterations: 6,
-    system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-    tools: financeTools({ ...context, sources }),
-    messages: [{ role: "user", content: `Hoje é ${context.today} (horário de Brasília).\n\nPergunta: ${question}` }],
-  });
+  const tools = financeTools({ ...context, sources });
+  const declarations = tools.map((t) => ({
+    name: t.name,
+    description: t.description,
+    parametersJsonSchema: jsonSchema(t.inputSchema),
+  }));
 
+  const contents: Content[] = [
+    { role: "user", parts: [{ text: `Hoje é ${context.today} (horário de Brasília).\n\nPergunta: ${question}` }] },
+  ];
   const usage: Usage = { inputTokens: 0, outputTokens: 0 };
-  let last: Anthropic.Beta.BetaMessage | undefined;
-  for await (const message of runner) {
-    const step = usageOf(message);
+
+  for (let turn = 0; turn < MAX_TURNS; turn++) {
+    const response = await gemini().models.generateContent({
+      model: AI_MODEL,
+      contents,
+      config: { ...AI_CONFIG, systemInstruction: SYSTEM_PROMPT, tools: [{ functionDeclarations: declarations }] },
+    });
+    const step = usageOf(response);
     usage.inputTokens += step.inputTokens;
     usage.outputTokens += step.outputTokens;
-    last = message;
+
+    const calls = response.functionCalls ?? [];
+    if (calls.length === 0) {
+      const text = response.text?.trim();
+      if (!text) break;
+      return { answer: { text, sources }, usage };
+    }
+
+    // Keep the model's turn as returned (it carries thought signatures), then answer every call.
+    const modelTurn = response.candidates?.[0]?.content;
+    if (modelTurn) contents.push(modelTurn);
+    const results: Part[] = await Promise.all(
+      calls.map(async (call) => ({
+        functionResponse: { id: call.id, name: call.name, response: { result: await runTool(tools, call) } },
+      })),
+    );
+    contents.push({ role: "user", parts: results });
   }
 
-  if (!last || last.stop_reason === "refusal") {
-    return { answer: { text: "Não consigo responder a essa pergunta. Tente perguntar de outro jeito.", sources: [] }, usage };
-  }
-
-  const text = last.content
-    .filter((block): block is Anthropic.Beta.BetaTextBlock => block.type === "text")
-    .map((block) => block.text)
-    .join("\n")
-    .trim();
-
-  // Hitting the iteration cap leaves a turn that only asked for tools.
-  if (!text || last.stop_reason === "tool_use") {
-    return {
-      answer: { text: "A pergunta ficou ampla demais para uma resposta. Tente algo mais específico.", sources },
-      usage,
-    };
-  }
-  return { answer: { text, sources }, usage };
+  return {
+    answer: { text: "A pergunta ficou ampla demais para uma resposta. Tente algo mais específico.", sources },
+    usage,
+  };
 }

@@ -1,5 +1,4 @@
 import "server-only";
-import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { getBudgetProgress } from "@/lib/data/budgets";
 import { getCardSummaries } from "@/lib/data/cards";
@@ -11,7 +10,7 @@ import { GOAL_STATUS_LABELS } from "@/lib/goals";
 import { createClient } from "@/lib/supabase/server";
 import { transactionsHref } from "@/lib/transaction-filters";
 import { aggregate, findByName, type AiRow } from "./aggregate";
-import { AI_REQUEST, anthropic, usageOf, type Usage } from "./client";
+import { AI_CONFIG, AI_MODEL, gemini, jsonSchema, usageOf, type Usage } from "./client";
 
 export type SummaryInsight = { text: string; href: string | null };
 export type MonthSummary = { month: string; headline: string; insights: SummaryInsight[]; generatedAt: string };
@@ -105,19 +104,24 @@ export async function summarizeMonth(
 ): Promise<{ summary: MonthSummary; usage: Usage }> {
   const facts = await monthFacts(month, today, lookups);
 
-  const response = await anthropic().beta.messages.parse({
-    ...AI_REQUEST,
-    system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-    output_config: { ...AI_REQUEST.output_config, format: betaZodOutputFormat(SummarySchema) },
-    messages: [{ role: "user", content: `Dados do mês (JSON):\n${JSON.stringify(facts)}` }],
+  const response = await gemini().models.generateContent({
+    model: AI_MODEL,
+    contents: [{ role: "user", parts: [{ text: `Dados do mês (JSON):
+${JSON.stringify(facts)}` }] }],
+    config: {
+      ...AI_CONFIG,
+      systemInstruction: SYSTEM_PROMPT,
+      responseMimeType: "application/json",
+      responseJsonSchema: jsonSchema(SummarySchema),
+    },
   });
 
-  const parsed = response.stop_reason === "refusal" ? null : response.parsed_output;
-  if (!parsed) throw new Error(`Summary not parsed (stop_reason: ${response.stop_reason})`);
+  const parsed = SummarySchema.safeParse(safeJson(response.text));
+  if (!parsed.success) throw new Error(`Summary not parsed: ${parsed.error.issues[0]?.message}`);
 
   // Links are built by the app from the category name, never taken from the model.
   const expenseCategories = lookups.categories.filter((c) => c.kind === "expense");
-  const insights = parsed.insights.slice(0, 5).map((insight) => {
+  const insights = parsed.data.insights.slice(0, 5).map((insight) => {
     const category = insight.category ? findByName(expenseCategories, insight.category) : undefined;
     return {
       text: insight.text,
@@ -126,7 +130,15 @@ export async function summarizeMonth(
   });
 
   return {
-    summary: { month, headline: parsed.headline, insights, generatedAt: new Date().toISOString() },
+    summary: { month, headline: parsed.data.headline, insights, generatedAt: new Date().toISOString() },
     usage: usageOf(response),
   };
+}
+
+function safeJson(text: string | undefined): unknown {
+  try {
+    return JSON.parse(text ?? "");
+  } catch {
+    return null;
+  }
 }

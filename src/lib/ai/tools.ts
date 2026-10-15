@@ -1,5 +1,4 @@
 import "server-only";
-import { betaZodTool } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { getBudgetProgress } from "@/lib/data/budgets";
 import { getCardSummaries } from "@/lib/data/cards";
@@ -35,8 +34,25 @@ function addSources(context: ToolContext, sources: Source[]) {
   }
 }
 
-export function financeTools(context: ToolContext) {
-  const findTransactions = betaZodTool({
+/** A tool the model can call: its schema is sent as JSON Schema, and `run` gets validated input. */
+export type FinanceTool = {
+  name: string;
+  description: string;
+  inputSchema: z.ZodObject;
+  run: (input: never) => Promise<string>;
+};
+
+function defineTool<S extends z.ZodObject>(tool: {
+  name: string;
+  description: string;
+  inputSchema: S;
+  run: (input: z.infer<S>) => Promise<string>;
+}): FinanceTool {
+  return tool as FinanceTool;
+}
+
+export function financeTools(context: ToolContext): FinanceTool[] {
+  const findTransactions = defineTool({
     name: "find_transactions",
     description:
       "Soma, agrupa e lista os lançamentos do usuário em um período. Use para qualquer pergunta sobre " +
@@ -118,7 +134,7 @@ export function financeTools(context: ToolContext) {
     },
   });
 
-  const getContext = betaZodTool({
+  const getContext = defineTool({
     name: "get_context",
     description:
       "Mostra as contas (com saldo), as categorias, os orçamentos do mês atual, as metas e as faturas " +

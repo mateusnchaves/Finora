@@ -60,9 +60,10 @@ notificações de fatura, orçamento e metas.
 - [x] A IA só chama funções de leitura já existentes, com o cliente do próprio usuário (RLS
       continua valendo); nunca escreve no banco
 - [x] Cada resposta mostra de onde veio o número (link para os lançamentos filtrados)
-- [x] API do Claude só no servidor; limite de uso por usuário e cache do resumo mensal
+- [x] IA (Gemini, plano gratuito) só no servidor; limite de uso por usuário e cache do resumo mensal
 - [x] Conta demo só com perguntas prontas, guardadas por dia (custo limitado)
-- [ ] Criar a chave da API da Anthropic e colocar no `.env.local` e na Vercel
+- [ ] Criar a chave grátis do Gemini (Google AI Studio) e colocar no `.env.local` e na Vercel
+- [ ] Personalidade da Clara (nome, tom, ícone e textos)
 
 ### Fase 13 — App no celular (PWA) — objetivo final
 - [ ] Antes de começar: trocar a secret key e a senha do banco do Supabase (e o token da brapi),

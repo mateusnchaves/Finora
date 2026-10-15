@@ -40,7 +40,7 @@ every night.
 
 **Assistente (AI)**
 - Monthly summary written from the month's numbers, with links to the transactions behind each point.
-- Questions in Portuguese ("quanto gastei com Uber em agosto?") answered by Claude through read-only
+- Questions in Portuguese ("quanto gastei com Uber em agosto?") answered by Gemini through read-only
   tools, each answer listing where its numbers came from.
 
 **Investments**
@@ -70,7 +70,7 @@ every night.
 - **Next.js 16** (App Router, Server Actions, Cache Components, Proxy) + **TypeScript**
 - **Tailwind CSS 4** with tokens from the Finora design system
 - **Supabase**: Postgres, Auth, Row Level Security, `pg_cron`
-- **Anthropic SDK** (Claude) for the Assistente
+- **Google Gen AI SDK** (Gemini, free tier) for the Assistente
 - **Zod** for form validation, **Vitest** and **Playwright** for tests, **GitHub Actions** for CI
 - Market data: [brapi.dev](https://brapi.dev), [CoinGecko](https://www.coingecko.com/),
   [AwesomeAPI](https://docs.awesomeapi.com.br/), [Banco Central SGS](https://dadosabertos.bcb.gov.br/)
@@ -177,8 +177,10 @@ the calendar months until the deadline, counting the current one.
 
 ### Assistente (AI)
 
-The assistant runs on the server with the Anthropic SDK (`claude-opus-5-5`, low effort, server-side
-refusal fallback). Two read-only tools (`src/lib/ai/tools.ts`) are all it can use:
+The assistant runs on the server with the Google Gen AI SDK (`gemini-3.8-flash` on the free tier,
+low thinking; `GEMINI_MODEL` swaps it). The question loop is a plain function-calling loop
+(`src/lib/ai/ask.ts`, at most six turns), and tool input is validated with the same Zod schemas
+that are sent to the model as JSON Schema. Two read-only tools (`src/lib/ai/tools.ts`) are all it can use:
 `find_transactions` (sum, group and list transactions in a period, with type, category, account and
 text filters) and `get_context` (accounts, categories, budgets, goals, card bills). They query with
 the signed-in user's own Supabase client, so Row Level Security applies to the model exactly as to
@@ -188,7 +190,7 @@ output; its links are built by the app from the category name, never taken from 
 
 Limits: 20 questions and 5 summaries per user per day (`ai_requests`). Suggested questions and
 summaries are cached per day (`ai_results`), and the shared demo account can only use those, so its
-cost is bounded. Without `ANTHROPIC_API_KEY` the page says the assistant is unavailable and the rest
+cost is bounded. Without `GEMINI_API_KEY` the page says the assistant is unavailable and the rest
 of the app is unaffected.
 
 ### Error monitoring
@@ -270,7 +272,8 @@ Open http://localhost:3000.
 4. For Google sign-in, create an OAuth client (Web application) in Google Cloud with the
    redirect URI `https://<project-ref>.supabase.co/auth/v1/callback`, then paste its client ID
    and secret in Supabase → Authentication → Sign In / Providers → Google.
-5. For the Assistente, add `ANTHROPIC_API_KEY` (from console.anthropic.com).
+5. For the Assistente, add `GEMINI_API_KEY` (free, from aistudio.google.com). On the free tier Google
+   may use the content to improve its products; the privacy page says so.
 
 ## Project structure
 
